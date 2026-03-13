@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+
+<title>Data Center</title>
+
+<style>
+
+body{
+font-family: Arial;
+margin:40px;
+}
+
+h1{
+margin-bottom:20px;
+}
+
+#files{
+margin-top:20px;
+}
+
+.item{
+padding:6px;
+cursor:pointer;
+}
+
+.item:hover{
+background:#eeeeee;
+}
+
+.folder{
+font-weight:bold;
+}
+
+.back{
+color:blue;
+cursor:pointer;
+margin-bottom:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Data Center</h1>
+
+<div id="path"></div>
+
+<div id="back"></div>
+
+<div id="files"></div>
+
+<script>
+
+let currentPath="";
+
+function getParentPath(path){
+
+if(path==="") return "";
+
+let parts=path.split("/");
+
+parts.pop();
+
+return parts.join("/");
+
+}
+
+async function loadFiles(path=""){
+
+currentPath=path;
+
+let url="/api/list";
+
+if(path!=""){
+url+="?path="+path;
+}
+
+let res=await fetch(url);
+
+let data=await res.json();
+
+let filesDiv=document.getElementById("files");
+let backDiv=document.getElementById("back");
+
+filesDiv.innerHTML="";
+backDiv.innerHTML="";
+
+if(path!==""){
+
+let back=document.createElement("div");
+
+back.innerText="⬅ Back";
+
+back.className="back";
+
+back.onclick=()=>{
+
+loadFiles(getParentPath(path));
+
+};
+
+backDiv.appendChild(back);
+
+}
+
+data.forEach(item=>{
+
+let div=document.createElement("div");
+
+div.className="item";
+
+if(item.is_dir){
+
+div.classList.add("folder");
+
+div.innerText="📁 "+item.name;
+
+div.onclick=()=>{
+
+let newPath=path?path+"/"+item.name:item.name;
+
+loadFiles(newPath);
+
+};
+
+}else{
+
+div.innerText="📄 "+item.name;
+
+div.onclick=()=>{
+
+let filePath=path?path+"/"+item.name:item.name;
+
+window.open("/files/"+filePath);
+
+};
+
+}
+
+filesDiv.appendChild(div);
+
+});
+
+document.getElementById("path").innerText="Path: /"+path;
+
+}
+
+loadFiles();
+
+</script>
+
+</body>
+
+</html>
