@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<button onclick="reindex()">🔄 Re-index</button>
+
 
 <head>
 <meta charset="UTF-8">
@@ -25,6 +25,7 @@ margin-top:20px;
 .item{
 padding:6px;
 cursor:pointer;
+user-select: none;
 }
 
 .item:hover{
@@ -46,6 +47,7 @@ margin-bottom:10px;
 </head>
 
 <body>
+<button onclick="reindex()">🔄 Re-index</button>
 
 <h1>Data Center</h1>
 
@@ -58,6 +60,26 @@ margin-bottom:10px;
 <div id="files"></div>
 
 <script>
+    
+function getIcon(name, is_dir) {
+    if (is_dir) return "📁";
+    
+    let ext = name.split(".").pop().toLowerCase();
+    
+    const icons = {
+        jpg: "🖼️", jpeg: "🖼️", png: "🖼️", gif: "🖼️", webp: "🖼️",
+        pdf: "📕",
+        doc: "📘", docx: "📘",
+        xls: "📗", xlsx: "📗",
+        ppt: "📙", pptx: "📙",
+        txt: "📝",
+        mp4: "🎬", mov: "🎬", avi: "🎬",
+        mp3: "🎵", wav: "🎵",
+        zip: "🗜️", rar: "🗜️",
+    };
+
+    return icons[ext] || "📄";
+}
 
 let currentPath = "";
 
@@ -79,10 +101,10 @@ async function loadFiles(path = "") {
     filesDiv.innerHTML = "";
     backDiv.innerHTML = "";
 
-    // back button
     if (path !== "") {
         let back = document.createElement("div");
         back.innerText = "⬅ Back";
+        back.className = "back";
         back.onclick = () => {
             let parts = path.split("/");
             parts.pop();
@@ -92,35 +114,31 @@ async function loadFiles(path = "") {
     }
 
     data.forEach(item => {
-
         let div = document.createElement("div");
+        div.className = "item";
 
         div.innerHTML = `
-            <div>${item.is_dir ? "📁" : "📄"} ${item.name}</div>
+            <div>${getIcon(item.name, item.is_dir)} ${item.name}</div>
             <div style="font-size:12px;color:gray;">${item.path}</div>
         `;
 
-div.onclick = () => {
-    if (item.is_dir) {
-        loadFiles(item.path);
-    } else {
-
-        let ext = item.name.split(".").pop().toLowerCase();
-
-        if (["jpg","jpeg","png","gif","webp"].includes(ext)) {
-            showImage(item.path);   // 👈 เพิ่มตรงนี้
-        } else {
-            window.open("/files/" + item.path);
-        }
-
-    }
-};
+        div.onclick = () => {
+            if (item.is_dir) {
+                loadFiles(item.path);
+            } else {
+                let ext = item.name.split(".").pop().toLowerCase();
+                if (["jpg","jpeg","png","gif","webp"].includes(ext)) {
+                    showImage(item.path);
+                } else {
+                    window.open("/files/" + item.path);
+                }
+            }
+        };
 
         filesDiv.appendChild(div);
     });
 }
 
-// 🔥 SEARCH (ตัวสำคัญ)
 let searchTimeout;
 
 document.getElementById("search").addEventListener("input", function(){
@@ -129,85 +147,72 @@ document.getElementById("search").addEventListener("input", function(){
 
     let q = this.value;
 
-    if(q.length === 0){
+    if (q.length === 0) {
         loadFiles(currentPath);
         return;
     }
 
-    searchTimeout = setTimeout(async ()=>{
-
+    searchTimeout = setTimeout(async () => {
         let res = await fetch("/api/search?q=" + encodeURIComponent(q));
         let data = await res.json();
-
         showResults(data);
-
-    }, 300); // delay 300ms
-
+    }, 300);
 });
 
-   function showResults(data){
+function showResults(data) {
 
-    let filesDiv=document.getElementById("files");
-    let backDiv=document.getElementById("back");
+    let filesDiv = document.getElementById("files");
+    let backDiv = document.getElementById("back");
 
-    filesDiv.innerHTML="";
-    backDiv.innerHTML="";
+    filesDiv.innerHTML = "";
+    backDiv.innerHTML = "";
 
-    data.forEach(item=>{
+    data.forEach(item => {
+        let div = document.createElement("div");
+        div.className = "item";
 
-        let div=document.createElement("div");
-        div.className="item";
+        div.innerText = getIcon(item.name, item.is_dir) + " " + item.name;
 
-        if(item.is_dir){
-            div.innerText="📁 "+item.name;
-            div.onclick=()=>loadFiles(item.path);
-        }else{
-            div.innerText="📄 "+item.name;
-            div.onclick=()=>window.open("/files/"+item.path);
-        }
-div.onclick=()=>{
+        div.onclick = () => {
+            if (item.is_dir) {
+                loadFiles(item.path);
+                return;
+            }
+            let ext = item.name.split(".").pop().toLowerCase();
+            if (["jpg","jpeg","png","gif","webp"].includes(ext)) {
+                showImage(item.path);
+            } else {
+                window.open("/files/" + item.path);
+            }
+        };
 
-    let ext = item.name.split(".").pop().toLowerCase();
-
-    if (["jpg","jpeg","png","gif","webp"].includes(ext)) {
-        showImage(item.path);   // 👈 เพิ่มตรงนี้
-    } else {
-        window.open("/files/"+item.path);
-    }
-
-};
         filesDiv.appendChild(div);
-
     });
-
 }
 
-async function reindex(){
+async function reindex() {
     alert("กำลัง scan ไฟล์...");
-
     let res = await fetch("/api/reindex");
     let text = await res.text();
-
     alert(text);
-
-    loadFiles(currentPath); // reload หน้า
+    loadFiles(currentPath);
 }
 
-function showImage(path){
+function showImage(path) {
+    let preview = document.getElementById("preview");
+    let img = document.getElementById("previewImg");
+    let downloadBtn = document.getElementById("downloadBtn");
 
-    let preview=document.getElementById("preview");
-    let img=document.getElementById("previewImg");
+    let url = "/files/" + path.split("/").map(encodeURIComponent).join("/");
 
-    img.src="/files/"+encodeURIComponent(path);
-
-    preview.style.display="block";
+    img.src = url;
+    downloadBtn.href = url;
+    preview.style.display = "block";
 }
 
-function closePreview(){
-    document.getElementById("preview").style.display="none";
+function closePreview() {
+    document.getElementById("preview").style.display = "none";
 }
-
-// โหลดครั้งแรก
 
 loadFiles();
 
@@ -221,10 +226,17 @@ loadFiles();
     height:100%;
     background:#111;
     display:none;
+    padding:10px;
 ">
-    <span onclick="closePreview()" style="color:white;cursor:pointer;">❌ Close</span>
 
-    <img id="previewImg" style="max-width:100%;max-height:90%;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span onclick="closePreview()" style="color:white;cursor:pointer;">❌ Close</span>
+
+        <a id="downloadBtn" style="color:white;" download>⬇ Download</a>
+    </div>
+
+    <img id="previewImg" style="max-width:100%;max-height:90%;margin-top:10px;">
+
 </div>
 
 </body>
