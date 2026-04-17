@@ -1,193 +1,648 @@
 <!DOCTYPE html>
 <html>
-
-
 <head>
 <meta charset="UTF-8">
-
-<title>Data Center</title>
-
+<title>โรงเรียน - Data Center</title>
 <style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial; display: flex; height: 100vh; overflow: hidden; }
 
-body{
-font-family: Arial;
-margin:40px;
-}
+.sidebar { width: 220px; border-right: 1px solid #eee; display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar-top { padding: 12px; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 8px; }
+.sidebar-top input { width: 100%; padding: 7px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
+.sidebar-list { flex: 1; overflow-y: auto; padding: 8px; min-height: 0; }
+.region-label { font-size: 10px; color: #aaa; padding: 8px 8px 2px; margin-top: 4px; text-transform: uppercase; }
+.school-item { padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; color: #555; display: flex; align-items: center; gap: 8px; user-select: none; }
+.school-item:hover { background: #f5f5f5; color: #111; }
+.school-item.active { background: #f0f0f0; color: #111; font-weight: bold; }
 
-h1{
-margin-bottom:20px;
-}
+.main { flex: 1; overflow-y: auto; padding: 1.5rem; }
+.school-header { margin-bottom: 1.25rem; }
+.school-header h2 { font-size: 20px; font-weight: bold; color: #111; }
+.school-header p { font-size: 12px; color: #888; margin-top: 4px; }
 
-#files{
-margin-top:20px;
-}
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+.stat { background: #f7f7f7; border-radius: 8px; padding: 12px; }
+.stat-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+.stat-value { font-size: 22px; font-weight: bold; color: #111; }
 
-.item{
-padding:6px;
-cursor:pointer;
-user-select: none;
-}
+.section { border: 1px solid #eee; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1rem; background: #fff; }
+.sec-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.sec-title { font-size: 14px; font-weight: bold; color: #111; }
+.sec-btn { font-size: 12px; padding: 4px 12px; border: 1px solid #ddd; border-radius: 6px; background: none; cursor: pointer; color: #555; }
+.sec-btn:hover { background: #f5f5f5; }
 
-.item:hover{
-background:#eeeeee;
-}
+.teacher-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid #f0f0f0; }
+.avatar { width: 30px; height: 30px; border-radius: 50%; background: #dbeafe; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #2563eb; flex-shrink: 0; }
+.t-name { flex: 1; font-size: 13px; color: #111; }
+.badge { font-size: 11px; padding: 2px 8px; border-radius: 6px; background: #dcfce7; color: #16a34a; }
+.course-badge { font-size: 11px; padding: 2px 8px; border-radius: 6px; background: #dbeafe; color: #2563eb; }
 
-.folder{
-font-weight:bold;
-}
+.img-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.img-thumb { aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid #eee; cursor: pointer; background: #f5f5f5; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+.img-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.img-thumb:hover { border-color: #aaa; }
 
-.back{
-color:blue;
-cursor:pointer;
-margin-bottom:10px;
-}
+.doc-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid #f0f0f0; cursor: pointer; }
+.doc-row:hover .doc-name { color: #2563eb; }
+.doc-icon { font-size: 16px; flex-shrink: 0; }
+.doc-name { flex: 1; font-size: 13px; color: #111; }
+.doc-open { font-size: 11px; color: #aaa; }
 
+.empty { font-size: 13px; color: #aaa; padding: 8px 0; }
+.no-school { display: flex; align-items: center; justify-content: center; height: 60%; font-size: 14px; color: #aaa; }
+
+.preview-panel { position: fixed; top: 0; right: 0; width: 50%; height: 100%; background: #111; display: none; padding: 10px; z-index: 100; }
+.preview-panel img { max-width: 100%; max-height: 90%; margin-top: 10px; }
+
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.3); display: none; align-items: center; justify-content: center; z-index: 200; }
+.modal-backdrop.open { display: flex; }
+.modal { background: #fff; border-radius: 12px; border: 1px solid #eee; padding: 1.5rem; width: 520px; max-width: 95vw; max-height: 85vh; overflow-y: auto; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+.modal-title { font-size: 15px; font-weight: bold; color: #111; }
+.modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: #aaa; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-label { font-size: 11px; color: #888; }
+.form-group input, .form-group select { padding: 7px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; background: #fff; color: #111; font-family: Arial; }
+.teacher-form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid #f0f0f0; }
+.btn-remove { background: none; border: 1px solid #fca5a5; border-radius: 6px; padding: 5px 8px; cursor: pointer; color: #ef4444; font-size: 12px; }
+.btn-add-teacher { font-size: 12px; padding: 6px 14px; border: 1px dashed #ddd; border-radius: 6px; background: none; cursor: pointer; color: #555; width: 100%; margin-top: 8px; }
+.btn-add-teacher:hover { background: #f5f5f5; }
+.form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.25rem; }
+.btn-cancel { font-size: 13px; padding: 7px 16px; border: 1px solid #ddd; border-radius: 6px; background: none; cursor: pointer; color: #555; }
+.btn-save { font-size: 13px; padding: 7px 16px; border: 1px solid #ddd; border-radius: 6px; background: none; cursor: pointer; color: #111; font-weight: bold; }
+.btn-save:hover { background: #f5f5f5; }
+
+.ticket-card { border: 1px solid #eee; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 10px; }
+.ticket-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.ticket-school { font-size: 15px; font-weight: bold; color: #111; }
+.ticket-meta { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 8px; }
+.ticket-meta span { font-size: 12px; color: #666; }
+.ticket-teachers-list { margin: 8px 0; }
+.ticket-teacher-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; color: #111; }
+.ticket-actions { display: flex; gap: 8px; padding-top: 8px; border-top: 1px solid #f0f0f0; margin-top: 4px; }
+.btn-done { font-size: 12px; padding: 5px 14px; border: 1px solid #86efac; border-radius: 6px; background: none; cursor: pointer; color: #16a34a; font-weight: bold; }
+.btn-done:hover { background: #dcfce7; }
+.btn-del { font-size: 12px; padding: 5px 10px; border: 1px solid #eee; border-radius: 6px; background: none; cursor: pointer; color: #aaa; }
+.status-pending { font-size: 11px; padding: 3px 10px; border-radius: 6px; background: #fef9c3; color: #ca8a04; }
+.ticket-fab { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+.ticket-fab:hover { background: #f5f5f5; }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #111; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; display: none; z-index: 999; }
 </style>
-
 </head>
-
+<div class="modal-backdrop" id="editModal" onclick="handleEditBackdrop(event)">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">แก้ไข ticket</div>
+            <button class="modal-close" onclick="closeEditModal()">✕</button>
+        </div>
+        <input type="hidden" id="editId">
+        <div class="form-grid">
+            <div class="form-group">
+                <div class="form-label">โรงเรียน</div>
+                <select id="eSchool"></select>
+            </div>
+            <div class="form-group">
+                <div class="form-label">ผู้ประสานงาน</div>
+                <input type="text" id="eCoord" placeholder="ชื่อผู้ประสานงาน">
+            </div>
+            <div class="form-group">
+                <div class="form-label">ค่าอบรม (บาท)</div>
+                <input type="number" id="eFee" placeholder="0">
+            </div>
+            <div class="form-group">
+                <div class="form-label">ค่าใช้จ่าย/เดินทาง (บาท)</div>
+                <input type="number" id="eExpense" placeholder="0">
+            </div>
+            <div class="form-group">
+                <div class="form-label">วันที่อบรม</div>
+                <input type="date" id="eDate">
+            </div>
+            <div class="form-group">
+                <div class="form-label">สถานที่อบรม</div>
+                <input type="text" id="eAddr" placeholder="สถานที่">
+            </div>
+        </div>
+        <div style="margin-top:1rem;">
+            <div style="font-size:12px; font-weight:bold; color:#111; margin-bottom:8px;">รายชื่อครู</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; font-size:11px; color:#aaa; padding-bottom:4px;">
+                <span>ชื่อ-นามสกุล</span><span>ระดับ</span><span>หลักสูตร</span><span></span>
+            </div>
+            <div id="editTeacherFormList"></div>
+            <button class="btn-add-teacher" onclick="addEditTeacherRow()">+ เพิ่มครู</button>
+        </div>
+        <div class="form-actions">
+            <button class="btn-cancel" onclick="closeEditModal()">ยกเลิก</button>
+            <button class="btn-save" onclick="submitEdit()">บันทึก</button>
+        </div>
+    </div>
+</div>
 <body>
-<button onclick="reindex()">🔄 Re-index</button>
 
-<h1>Data Center</h1>
+<div class="sidebar">
+    <div class="sidebar-top">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:14px; font-weight:bold; color:#111;">Data Center</span>
+            <button onclick="reindex()" style="font-size:12px; padding:4px 10px; border:1px solid #ddd; border-radius:6px; background:none; cursor:pointer; color:#555;">🔄 Reindex</button>
+        </div>
+        <input id="searchInput" placeholder="ค้นหาไฟล์..." oninput="searchFiles(this.value)">
+    </div>
+    <div class="sidebar-list" id="schoolList">
+        <div class="empty">กำลังโหลด...</div>
+    </div>
+    <div style="padding:8px; border-top:1px solid #eee;">
+        <div class="school-item" id="ticketNavItem" onclick="showTicketPage(this)">🎫 ticket อบรม</div>
+    </div>
+</div>
 
-<input id="search" placeholder="Search school or file..." style="width:300px;padding:8px;margin-bottom:20px;">
+<div class="main" id="main">
+    <div class="no-school">← เลือกโรงเรียนจาก sidebar</div>
+</div>
 
-<div id="path"></div>
+<div class="preview-panel" id="preview">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span onclick="closePreview()" style="color:white;cursor:pointer;">❌ Close</span>
+        <a id="downloadBtn" style="color:white;" download>⬇ Download</a>
+    </div>
+    <img id="previewImg">
+</div>
 
-<div id="back"></div>
+<div class="modal-backdrop" id="ticketModal" onclick="handleBackdrop(event)">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">เพิ่ม ticket อบรม</div>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="form-grid">
+            <div class="form-group">
+                <div class="form-label">โรงเรียน</div>
+                <select id="tSchool"></select>
+            </div>
+            <div class="form-group">
+                <div class="form-label">ผู้ประสานงาน</div>
+                <input type="text" id="tCoord" placeholder="ชื่อผู้ประสานงาน">
+            </div>
+            <div class="form-group">
+                <div class="form-label">ค่าอบรม (บาท)</div>
+                <input type="number" id="tFee" placeholder="0">
+            </div>
+            <div class="form-group">
+                <div class="form-label">ค่าใช้จ่าย/เดินทาง (บาท)</div>
+                <input type="number" id="tExpense" placeholder="0">
+            </div>
+            <div class="form-group">
+                <div class="form-label">วันที่อบรม</div>
+                <input type="date" id="tDate">
+            </div>
+            <div class="form-group">
+                <div class="form-label">สถานที่อบรม</div>
+                <input type="text" id="tAddr" placeholder="สถานที่">
+            </div>
+        </div>
+        <div style="margin-top:1rem;">
+            <div style="font-size:12px; font-weight:bold; color:#111; margin-bottom:8px;">รายชื่อครู</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; font-size:11px; color:#aaa; padding-bottom:4px;">
+                <span>ชื่อ-นามสกุล</span><span>ระดับ</span><span>หลักสูตร</span><span></span>
+            </div>
+            <div id="teacherFormList"></div>
+            <button class="btn-add-teacher" onclick="addTeacherRow()">+ เพิ่มครู</button>
+        </div>
+        <div class="form-actions">
+            <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+            <button class="btn-save" onclick="submitTicket()">บันทึก ticket</button>
+        </div>
+    </div>
+</div>
 
-<div id="files"></div>
+<div class="toast" id="toast"></div>
 
 <script>
-    
-function getIcon(name, is_dir) {
-    if (is_dir) return "📁";
-    
-    let ext = name.split(".").pop().toLowerCase();
-    
-    const icons = {
-        jpg: "🖼️", jpeg: "🖼️", png: "🖼️", gif: "🖼️", webp: "🖼️",
-        pdf: "📕",
-        doc: "📘", docx: "📘",
-        xls: "📗", xlsx: "📗",
-        ppt: "📙", pptx: "📙",
-        txt: "📝",
-        mp4: "🎬", mov: "🎬", avi: "🎬",
-        mp3: "🎵", wav: "🎵",
-        zip: "🗜️", rar: "🗜️",
-    };
+let currentSchool = null;
+let allSchools = [];
+let tickets = [];
+let teacherRows = [];
 
+// ── SCHOOLS ──────────────────────────────
+
+async function loadSchools() {
+    let res = await fetch("/api/schools");
+    allSchools = await res.json();
+    renderSchoolList(allSchools);
+}
+
+function renderSchoolList(schools) {
+    let list = document.getElementById("schoolList");
+    if (schools.length === 0) {
+        list.innerHTML = '<div class="empty">ไม่พบโรงเรียน</div>';
+        return;
+    }
+    list.innerHTML = schools.map(s => `
+        <div class="school-item" onclick="selectSchool(this, '${s}')">🏫 ${s}</div>
+    `).join("");
+}
+
+async function selectSchool(el, name) {
+    document.querySelectorAll(".school-item").forEach(i => i.classList.remove("active"));
+    el.classList.add("active");
+    currentSchool = name;
+    document.getElementById("main").innerHTML = '<div class="no-school">กำลังโหลด...</div>';
+
+    let [teachers, files, schoolTickets] = await Promise.all([
+        fetch(`/api/teachers?school=${encodeURIComponent(name)}`).then(r => r.json()),
+        fetch(`/api/school-files?school=${encodeURIComponent(name)}`).then(r => r.json()),
+        fetch(`/api/school-tickets?school=${encodeURIComponent(name)}`).then(r => r.json()),
+    ]);
+
+    renderSchool(name, teachers, files, schoolTickets);
+}
+
+async function loadTickets() {
+    let [pending, done] = await Promise.all([
+        fetch("/api/tickets").then(r => r.json()),
+        fetch("/api/tickets/done").then(r => r.json()),
+    ]);
+    tickets = pending;
+    renderTicketPage(pending, done);
+}
+
+function renderTicketPage(pending, done) {
+    let totalFee = [...pending, ...done].reduce((s, t) => s + (t.fee||0), 0);
+    let totalExp = [...pending, ...done].reduce((s, t) => s + (t.expense||0), 0);
+
+    let pendingHTML = pending.length === 0
+        ? '<div class="empty" style="text-align:center;padding:1.5rem;">ไม่มี ticket ที่กำลังดำเนินการ</div>'
+        : pending.map(t => ticketCardHTML(t, false)).join("");
+
+    let doneHTML = done.length === 0
+        ? '<div class="empty" style="text-align:center;padding:1rem;">ยังไม่มี ticket ที่เสร็จสิ้น</div>'
+        : done.map(t => ticketCardHTML(t, true)).join("");
+
+    document.getElementById("main").innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+            <div>
+                <div style="font-size:20px; font-weight:bold; color:#111;">ticket อบรม</div>
+                <div style="font-size:12px; color:#888; margin-top:4px;">จัดการ ticket การอบรมครู</div>
+            </div>
+            <button class="ticket-fab" onclick="openModal()">+</button>
+        </div>
+
+        <div class="stats" style="margin-bottom:1.25rem;">
+            <div class="stat">
+                <div class="stat-label">ทั้งหมด</div>
+                <div class="stat-value">${pending.length + done.length}</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">กำลังดำเนินการ</div>
+                <div class="stat-value" style="color:#ca8a04;">${pending.length}</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">เสร็จสิ้นแล้ว</div>
+                <div class="stat-value" style="color:#16a34a;">${done.length}</div>
+            </div>
+        </div>
+
+        <div class="stats" style="margin-bottom:1.25rem;">
+            <div class="stat">
+                <div class="stat-label">ค่าอบรมรวม</div>
+                <div class="stat-value" style="font-size:16px;">${totalFee.toLocaleString()} ฿</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">ค่าใช้จ่ายรวม</div>
+                <div class="stat-value" style="font-size:16px;">${totalExp.toLocaleString()} ฿</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">รวมทั้งสิ้น</div>
+                <div class="stat-value" style="font-size:16px;">${(totalFee+totalExp).toLocaleString()} ฿</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="sec-header">
+                <div class="sec-title">🕐 กำลังดำเนินการ (${pending.length})</div>
+            </div>
+            <div id="ticketPending">${pendingHTML}</div>
+        </div>
+
+        <div class="section">
+            <div class="sec-header">
+                <div class="sec-title">✅ เสร็จสิ้นแล้ว (${done.length})</div>
+            </div>
+            <div id="ticketDone">${doneHTML}</div>
+        </div>
+    `;
+
+    [...pending, ...done].forEach(t => loadTicketTeachers(t.id));
+}
+
+function ticketCardHTML(t, isDone) {
+    return `
+        <div class="ticket-card" style="${isDone ? 'opacity:0.7;' : ''}">
+            <div class="ticket-top">
+                <div class="ticket-school">🏫 โรงเรียน${t.school}</div>
+                <div class="status-pending" style="${isDone ? 'background:#dcfce7;color:#16a34a;' : ''}">
+                    ${isDone ? "✅ เสร็จสิ้น" : "รอดำเนินการ"}
+                </div>
+            </div>
+            <div class="ticket-meta">
+                ${t.coordinator ? `<span>👤 ${t.coordinator}</span>` : ""}
+                ${t.date ? `<span>📅 ${t.date}</span>` : ""}
+                ${t.addr ? `<span>📍 ${t.addr}</span>` : ""}
+            </div>
+            <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+                ${t.fee ? `<div style="background:#fef9c3; border-radius:8px; padding:8px 14px; text-align:center;">
+                    <div style="font-size:10px; color:#a16207;">ค่าอบรม</div>
+                    <div style="font-size:15px; font-weight:bold; color:#ca8a04;">${Number(t.fee).toLocaleString()} ฿</div>
+                </div>` : ""}
+                ${t.expense ? `<div style="background:#f0fdf4; border-radius:8px; padding:8px 14px; text-align:center;">
+                    <div style="font-size:10px; color:#15803d;">ค่าใช้จ่าย</div>
+                    <div style="font-size:15px; font-weight:bold; color:#16a34a;">${Number(t.expense).toLocaleString()} ฿</div>
+                </div>` : ""}
+                ${(t.fee||t.expense) ? `<div style="background:#f5f5f5; border-radius:8px; padding:8px 14px; text-align:center;">
+                    <div style="font-size:10px; color:#888;">รวม</div>
+                    <div style="font-size:15px; font-weight:bold; color:#111;">${Number((t.fee||0)+(t.expense||0)).toLocaleString()} ฿</div>
+                </div>` : ""}
+            </div>
+            <div class="ticket-teachers-list" id="tTeachers_${t.id}">
+                <div class="empty">กำลังโหลด...</div>
+            </div>
+            <div class="ticket-actions">
+                ${!isDone ? `<button class="btn-done" onclick="doneTicket(${t.id})">✓ เสร็จสิ้น</button>` : ""}
+                <button class="sec-btn" onclick="openEditModal(${t.id})">✏️ แก้ไข</button>
+                <button class="btn-del" onclick="deleteTicket(${t.id})">ลบ</button>
+            </div>
+        </div>`;
+}
+
+function showAllImages() {
+    let images = window._currentImages || [];
+    let html = images.map(img => {
+        let url = "/files/" + img.path.split("/").map(encodeURIComponent).join("/");
+        return `<div class="img-thumb" onclick="showImage('${img.path}')">
+            <img src="${url}" onerror="this.parentElement.innerHTML='🖼️'">
+        </div>`;
+    }).join("");
+    document.getElementById("main").innerHTML = `
+        <div style="margin-bottom:1rem;">
+            <button class="sec-btn" onclick="selectSchool(document.querySelector('.school-item.active'), '${currentSchool}')">← กลับ</button>
+        </div>
+        <div class="section">
+            <div class="sec-header"><div class="sec-title">รูปภาพทั้งหมด (${images.length})</div></div>
+            <div class="img-grid" style="grid-template-columns:repeat(6,1fr);">${html}</div>
+        </div>`;
+}
+
+function showAllDocs() {
+    let documents = window._currentDocs || [];
+    let html = documents.map(d => `
+        <div class="doc-row" onclick="openFile('${d.path}')">
+            <span class="doc-icon">${getIcon(d.name)}</span>
+            <div class="doc-name">${d.name}</div>
+            <span class="doc-open">เปิด ↗</span>
+        </div>`).join("");
+    document.getElementById("main").innerHTML = `
+        <div style="margin-bottom:1rem;">
+            <button class="sec-btn" onclick="selectSchool(document.querySelector('.school-item.active'), '${currentSchool}')">← กลับ</button>
+        </div>
+        <div class="section">
+            <div class="sec-header"><div class="sec-title">เอกสารทั้งหมด (${documents.length})</div></div>
+            ${html}
+        </div>`;
+}
+// ── EDITER ──────────────────────────
+let editTeacherRows = [];
+
+async function openEditModal(id) {
+    let res = await fetch("/api/ticket-teachers?ticket_id=" + id);
+    let teachers = await res.json();
+    let t = [...tickets].find(t => t.id === id);
+
+    // ถ้าไม่เจอใน pending ให้ดึงจาก done
+    if (!t) {
+        let res2 = await fetch("/api/tickets/done");
+        let done = await res2.json();
+        t = done.find(t => t.id === id);
+    }
+    if (!t) return;
+
+    document.getElementById("editId").value = id;
+    document.getElementById("eSchool").innerHTML = allSchools.map(s =>
+        `<option value="${s}" ${s === t.school ? "selected" : ""}>${s}</option>`
+    ).join("");
+    document.getElementById("eCoord").value = t.coordinator || "";
+    document.getElementById("eFee").value = t.fee || "";
+    document.getElementById("eExpense").value = t.expense || "";
+    document.getElementById("eDate").value = t.date || "";
+    document.getElementById("eAddr").value = t.addr || "";
+
+    editTeacherRows = [];
+    document.getElementById("editTeacherFormList").innerHTML = "";
+    teachers.forEach(t => addEditTeacherRow(t.name, t.level, t.course));
+
+    document.getElementById("editModal").classList.add("open");
+}
+
+function closeEditModal() {
+    document.getElementById("editModal").classList.remove("open");
+}
+
+function handleEditBackdrop(e) {
+    if (e.target === document.getElementById("editModal")) closeEditModal();
+}
+
+function addEditTeacherRow(name="", level="", course="") {
+    let rowId = Date.now() + Math.random();
+    editTeacherRows.push(rowId);
+    let div = document.createElement("div");
+    div.className = "teacher-form-row";
+    div.id = "erow_" + rowId;
+    div.innerHTML = `
+        <input type="text" placeholder="ชื่อ-นามสกุล" id="ename_${rowId}" value="${name}">
+        <input type="text" placeholder="ระดับ" id="elevel_${rowId}" value="${level}">
+        <input type="text" placeholder="หลักสูตร" id="ecourse_${rowId}" value="${course}">
+        <button class="btn-remove" onclick="removeEditTeacherRow(${rowId})">✕</button>
+    `;
+    document.getElementById("editTeacherFormList").appendChild(div);
+}
+
+function removeEditTeacherRow(rowId) {
+    let el = document.getElementById("erow_" + rowId);
+    if (el) el.remove();
+    editTeacherRows = editTeacherRows.filter(r => r !== rowId);
+}
+
+async function submitEdit() {
+    let id = document.getElementById("editId").value;
+    let school = document.getElementById("eSchool").value;
+    let coordinator = document.getElementById("eCoord").value.trim();
+    let fee = parseFloat(document.getElementById("eFee").value) || null;
+    let expense = parseFloat(document.getElementById("eExpense").value) || null;
+    let date = document.getElementById("eDate").value;
+    let addr = document.getElementById("eAddr").value.trim();
+
+    let teachers = editTeacherRows.map(rowId => ({
+        id: null, ticket_id: null,
+        name: document.getElementById("ename_" + rowId)?.value.trim() || "",
+        level: document.getElementById("elevel_" + rowId)?.value.trim() || "",
+        course: document.getElementById("ecourse_" + rowId)?.value.trim() || "",
+    })).filter(t => t.name !== "");
+
+    await fetch(`/api/tickets/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: parseInt(id), school, coordinator, fee, expense, date, addr, done: null, teachers })
+    });
+
+    closeEditModal();
+    showToast("แก้ไข ticket เรียบร้อย");
+    loadTickets();
+}
+
+// ── TICKET PAGE ──────────────────────────
+
+function showTicketPage(el) {
+    document.querySelectorAll(".school-item").forEach(i => i.classList.remove("active"));
+    el.classList.add("active");
+    currentSchool = null;
+    loadTickets();
+}
+
+async function loadTicketTeachers(ticketId) {
+    let el = document.getElementById("tTeachers_" + ticketId);
+    if (!el) return;
+    let res = await fetch("/api/ticket-teachers?ticket_id=" + ticketId);
+    let data = await res.json();
+    el.innerHTML = data.length === 0
+        ? '<div class="empty">ไม่มีรายชื่อครู</div>'
+        : data.map(t => `
+            <div class="ticket-teacher-item">
+                <div class="avatar">${getInitials(t.name)}</div>
+                <span style="flex:1;">${t.name}</span>
+                ${t.level ? `<div class="badge">${t.level}</div>` : ""}
+                ${t.course ? `<div class="course-badge">${t.course}</div>` : ""}
+            </div>
+        `).join("");
+}
+
+async function doneTicket(id) {
+    if (!confirm("ยืนยันเสร็จสิ้น? ครูจะถูกเพิ่มเข้าโรงเรียนอัตโนมัติ")) return;
+    await fetch(`/api/tickets/${id}/done`, { method: "POST" });
+    showToast("✓ เสร็จสิ้น ครูถูกเพิ่มเข้าโรงเรียนแล้ว");
+    loadTickets();
+}
+
+async function deleteTicket(id) {
+    if (!confirm("ลบ ticket นี้?")) return;
+    await fetch(`/api/tickets/${id}`, { method: "DELETE" });
+    loadTickets();
+}
+
+// ── MODAL ────────────────────────────────
+
+function openModal() {
+    teacherRows = [];
+    document.getElementById("tSchool").innerHTML = allSchools.map(s =>
+        `<option value="${s}">${s}</option>`
+    ).join("");
+    ["tCoord","tFee","tExpense","tDate","tAddr"].forEach(id => document.getElementById(id).value = "");
+    document.getElementById("teacherFormList").innerHTML = "";
+    addTeacherRow();
+    document.getElementById("ticketModal").classList.add("open");
+}
+
+function closeModal() {
+    document.getElementById("ticketModal").classList.remove("open");
+}
+
+function handleBackdrop(e) {
+    if (e.target === document.getElementById("ticketModal")) closeModal();
+}
+
+function addTeacherRow() {
+    let rowId = Date.now();
+    teacherRows.push(rowId);
+    let div = document.createElement("div");
+    div.className = "teacher-form-row";
+    div.id = "trow_" + rowId;
+    div.innerHTML = `
+        <input type="text" placeholder="ชื่อ-นามสกุล" id="tname_${rowId}">
+        <input type="text" placeholder="ระดับ" id="tlevel_${rowId}">
+        <input type="text" placeholder="หลักสูตร" id="tcourse_${rowId}">
+        <button class="btn-remove" onclick="removeTeacherRow(${rowId})">✕</button>
+    `;
+    document.getElementById("teacherFormList").appendChild(div);
+}
+
+function removeTeacherRow(rowId) {
+    let el = document.getElementById("trow_" + rowId);
+    if (el) el.remove();
+    teacherRows = teacherRows.filter(r => r !== rowId);
+}
+
+async function submitTicket() {
+    let school = document.getElementById("tSchool").value;
+    let coordinator = document.getElementById("tCoord").value.trim();
+    let fee = parseFloat(document.getElementById("tFee").value) || null;
+    let expense = parseFloat(document.getElementById("tExpense").value) || null;
+    let date = document.getElementById("tDate").value;
+    let addr = document.getElementById("tAddr").value.trim();
+
+    let teachers = teacherRows.map(rowId => ({
+        id: null, ticket_id: null,
+        name: document.getElementById("tname_" + rowId)?.value.trim() || "",
+        level: document.getElementById("tlevel_" + rowId)?.value.trim() || "",
+        course: document.getElementById("tcourse_" + rowId)?.value.trim() || "",
+    })).filter(t => t.name !== "");
+
+    if (!school) { showToast("กรุณาเลือกโรงเรียน"); return; }
+    if (teachers.length === 0) { showToast("กรุณาเพิ่มครูอย่างน้อย 1 คน"); return; }
+
+    await fetch("/api/tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: null, school, coordinator, fee, expense, date, addr, done: null, teachers })
+    });
+
+    closeModal();
+    showToast("เพิ่ม ticket เรียบร้อย");
+    loadTickets();
+}
+
+// ── UTILS ────────────────────────────────
+
+function getIcon(name) {
+    let ext = name.split(".").pop().toLowerCase();
+    const icons = { pdf:"📕", doc:"📘", docx:"📘", xls:"📗", xlsx:"📗", ppt:"📙", pptx:"📙", txt:"📝", zip:"🗜️", rar:"🗜️" };
     return icons[ext] || "📄";
 }
 
-let currentPath = "";
-
-async function loadFiles(path = "") {
-
-    currentPath = path;
-
-    let url = "/api/list";
-    if (path !== "") {
-        url += "?path=" + encodeURIComponent(path);
-    }
-
-    let res = await fetch(url);
-    let data = await res.json();
-
-    let filesDiv = document.getElementById("files");
-    let backDiv = document.getElementById("back");
-
-    filesDiv.innerHTML = "";
-    backDiv.innerHTML = "";
-
-    if (path !== "") {
-        let back = document.createElement("div");
-        back.innerText = "⬅ Back";
-        back.className = "back";
-        back.onclick = () => {
-            let parts = path.split("/");
-            parts.pop();
-            loadFiles(parts.join("/"));
-        };
-        backDiv.appendChild(back);
-    }
-
-    data.forEach(item => {
-        let div = document.createElement("div");
-        div.className = "item";
-
-        div.innerHTML = `
-            <div>${getIcon(item.name, item.is_dir)} ${item.name}</div>
-            <div style="font-size:12px;color:gray;">${item.path}</div>
-        `;
-
-        div.onclick = () => {
-            if (item.is_dir) {
-                loadFiles(item.path);
-            } else {
-                let ext = item.name.split(".").pop().toLowerCase();
-                if (["jpg","jpeg","png","gif","webp"].includes(ext)) {
-                    showImage(item.path);
-                } else {
-                    window.open("/files/" + item.path);
-                }
-            }
-        };
-
-        filesDiv.appendChild(div);
-    });
+function getInitials(name) {
+    let parts = name.trim().split(" ");
+    if (parts.length >= 2) return (parts[0].slice(-1) + parts[1][0]).toUpperCase();
+    return name.substring(0, 2);
 }
 
-let searchTimeout;
+function showToast(msg) {
+    let t = document.getElementById("toast");
+    t.textContent = msg;
+    t.style.display = "block";
+    setTimeout(() => t.style.display = "none", 2500);
+}
 
-document.getElementById("search").addEventListener("input", function(){
+function openFile(path) {
+    window.open("/files/" + path.split("/").map(encodeURIComponent).join("/"));
+}
 
-    clearTimeout(searchTimeout);
+function showImage(path) {
+    let url = "/files/" + path.split("/").map(encodeURIComponent).join("/");
+    document.getElementById("previewImg").src = url;
+    document.getElementById("downloadBtn").href = url;
+    document.getElementById("preview").style.display = "block";
+}
 
-    let q = this.value;
-
-    if (q.length === 0) {
-        loadFiles(currentPath);
-        return;
-    }
-
-    searchTimeout = setTimeout(async () => {
-        let res = await fetch("/api/search?q=" + encodeURIComponent(q));
-        let data = await res.json();
-        showResults(data);
-    }, 300);
-});
-
-function showResults(data) {
-
-    let filesDiv = document.getElementById("files");
-    let backDiv = document.getElementById("back");
-
-    filesDiv.innerHTML = "";
-    backDiv.innerHTML = "";
-
-    data.forEach(item => {
-        let div = document.createElement("div");
-        div.className = "item";
-
-        div.innerText = getIcon(item.name, item.is_dir) + " " + item.name;
-
-        div.onclick = () => {
-            if (item.is_dir) {
-                loadFiles(item.path);
-                return;
-            }
-            let ext = item.name.split(".").pop().toLowerCase();
-            if (["jpg","jpeg","png","gif","webp"].includes(ext)) {
-                showImage(item.path);
-            } else {
-                window.open("/files/" + item.path);
-            }
-        };
-
-        filesDiv.appendChild(div);
-    });
+function closePreview() {
+    document.getElementById("preview").style.display = "none";
 }
 
 async function reindex() {
@@ -195,50 +650,145 @@ async function reindex() {
     let res = await fetch("/api/reindex");
     let text = await res.text();
     alert(text);
-    loadFiles(currentPath);
 }
 
-function showImage(path) {
-    let preview = document.getElementById("preview");
-    let img = document.getElementById("previewImg");
-    let downloadBtn = document.getElementById("downloadBtn");
-
-    let url = "/files/" + path.split("/").map(encodeURIComponent).join("/");
-
-    img.src = url;
-    downloadBtn.href = url;
-    preview.style.display = "block";
+let searchTimeout;
+function searchFiles(q) {
+    clearTimeout(searchTimeout);
+    if (q.length === 0) { renderSchoolList(allSchools); return; }
+    searchTimeout = setTimeout(async () => {
+        let res = await fetch("/api/search?q=" + encodeURIComponent(q));
+        let data = await res.json();
+        showSearchResults(data);
+    }, 300);
 }
 
-function closePreview() {
-    document.getElementById("preview").style.display = "none";
+function showSearchResults(data) {
+    let list = document.getElementById("schoolList");
+    let schoolMatches = new Set();
+    data.forEach(item => {
+        let match = item.path.match(/School_([^/]+)/);
+        if (match) schoolMatches.add(match[1]);
+    });
+
+    if (schoolMatches.size > 0) {
+        list.innerHTML = [...schoolMatches].map(s => `
+            <div class="school-item" onclick="selectSchool(this, '${s}')">🏫 ${s}</div>
+        `).join("");
+    } else {
+        list.innerHTML = data.length === 0
+            ? '<div class="empty">ไม่พบไฟล์</div>'
+            : data.map(item => `
+                <div class="school-item" onclick="openFile('${item.path}')">
+                    ${item.is_dir ? "📁" : getIcon(item.name)} ${item.name}
+                </div>`).join("");
+    }
 }
 
-loadFiles();
+function renderSchool(name, teachers, files, schoolTickets = []) {
+    let images = files.images || [];
+    let documents = files.documents || [];
+    window._currentImages = images;
+    window._currentDocs = documents;
 
+    let teacherHTML = teachers.length === 0
+        ? '<div class="empty">ยังไม่มีข้อมูลครู</div>'
+        : teachers.map(t => `
+            <div class="teacher-row">
+                <div class="avatar">${getInitials(t.name)}</div>
+                <div class="t-name">${t.name}</div>
+                ${t.level ? `<div class="badge">${t.level}</div>` : ""}
+                ${t.course ? `<div class="course-badge">${t.course}</div>` : ""}
+            </div>
+        `).join("");
+
+    let imgPreview = images.slice(0, 5).map(img => {
+        let url = "/files/" + img.path.split("/").map(encodeURIComponent).join("/");
+        return `<div class="img-thumb" onclick="showImage('${img.path}')">
+            <img src="${url}" onerror="this.parentElement.innerHTML='🖼️'">
+        </div>`;
+    }).join("");
+    let imgHTML = images.length === 0 ? '<div class="empty">ไม่มีรูปภาพ</div>' : `<div class="img-grid">${imgPreview}</div>`;
+    let showMoreImg = images.length > 5 ? `<button class="sec-btn" onclick="showAllImages()">ดูทั้งหมด (${images.length}) →</button>` : "";
+
+    let docHTML = documents.length === 0
+        ? '<div class="empty">ไม่มีเอกสาร</div>'
+        : documents.slice(0, 5).map(d => `
+            <div class="doc-row" onclick="openFile('${d.path}')">
+                <span class="doc-icon">${getIcon(d.name)}</span>
+                <div class="doc-name">${d.name}</div>
+                <span class="doc-open">เปิด ↗</span>
+            </div>
+        `).join("");
+    let showMoreDoc = documents.length > 5 ? `<button class="sec-btn" onclick="showAllDocs()">ดูทั้งหมด (${documents.length}) →</button>` : "";
+
+    let ticketSection = schoolTickets.length === 0 ? "" : `
+        <div class="section">
+            <div class="sec-header">
+                <div class="sec-title">🎫 ticket กำลังดำเนินการ (${schoolTickets.length})</div>
+            </div>
+            ${schoolTickets.map(t => `
+                <div style="display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid #f0f0f0; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:140px;">
+                        <div style="font-size:13px; font-weight:bold; color:#111;">
+                            ${t.coordinator ? `👤 ${t.coordinator}` : "ไม่ระบุผู้ประสานงาน"}
+                        </div>
+                        <div style="font-size:11px; color:#888; margin-top:3px;">
+                            ${t.date ? `📅 ${t.date}` : ""}
+                            ${t.addr ? ` · 📍 ${t.addr}` : ""}
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:8px; flex-shrink:0;">
+                        ${t.fee ? `<div style="background:#fef9c3; border-radius:8px; padding:8px 14px; text-align:center;">
+                            <div style="font-size:10px; color:#a16207;">ค่าอบรม</div>
+                            <div style="font-size:15px; font-weight:bold; color:#ca8a04;">${Number(t.fee).toLocaleString()} ฿</div>
+                        </div>` : ""}
+                        ${t.expense ? `<div style="background:#f0fdf4; border-radius:8px; padding:8px 14px; text-align:center;">
+                            <div style="font-size:10px; color:#15803d;">ค่าใช้จ่าย</div>
+                            <div style="font-size:15px; font-weight:bold; color:#16a34a;">${Number(t.expense).toLocaleString()} ฿</div>
+                        </div>` : ""}
+                        <div style="background:#f5f5f5; border-radius:8px; padding:8px 14px; text-align:center;">
+                            <div style="font-size:10px; color:#888;">รวม</div>
+                            <div style="font-size:15px; font-weight:bold; color:#111;">${Number((t.fee||0)+(t.expense||0)).toLocaleString()} ฿</div>
+                        </div>
+                    </div>
+                </div>
+            `).join("")}
+        </div>`;
+
+    document.getElementById("main").innerHTML = `
+        <div class="school-header">
+            <h2>🏫 โรงเรียน${name}</h2>
+            <p>ปีการศึกษา 2026</p>
+        </div>
+        <div class="stats">
+            <div class="stat"><div class="stat-label">ครู</div><div class="stat-value">${teachers.length}</div></div>
+            <div class="stat"><div class="stat-label">รูปภาพ</div><div class="stat-value">${images.length}</div></div>
+            <div class="stat"><div class="stat-label">เอกสาร</div><div class="stat-value">${documents.length}</div></div>
+        </div>
+        ${ticketSection}
+        <div class="section">
+            <div class="sec-header"><div class="sec-title">รายชื่อครู</div></div>
+            ${teacherHTML}
+        </div>
+        <div class="section">
+            <div class="sec-header">
+                <div class="sec-title">รูปภาพ</div>
+                ${showMoreImg}
+            </div>
+            ${imgHTML}
+        </div>
+        <div class="section">
+            <div class="sec-header">
+                <div class="sec-title">เอกสาร / ไฟล์</div>
+                ${showMoreDoc}
+            </div>
+            ${docHTML}
+        </div>
+    `;
+}
+
+loadSchools();
 </script>
-
-<div id="preview" style="
-    position:fixed;
-    top:0;
-    right:0;
-    width:50%;
-    height:100%;
-    background:#111;
-    display:none;
-    padding:10px;
-">
-
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span onclick="closePreview()" style="color:white;cursor:pointer;">❌ Close</span>
-
-        <a id="downloadBtn" style="color:white;" download>⬇ Download</a>
-    </div>
-
-    <img id="previewImg" style="max-width:100%;max-height:90%;margin-top:10px;">
-
-</div>
-
 </body>
-
 </html>
