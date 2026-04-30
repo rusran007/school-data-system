@@ -4,6 +4,32 @@
 <meta charset="UTF-8">
 <title>โรงเรียน - Data Center</title>
 <style>
+        //darkmode
+body.dark { background: #0f172a; color: #e2e8f0; }
+body.dark .sidebar { background: #1e293b; border-color: #334155; }
+body.dark .sidebar-top { border-color: #334155; background: #1e293b; }
+body.dark .sidebar-top input { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+body.dark .school-item { color: #94a3b8; }
+body.dark .school-item:hover { background: #334155; color: #f1f5f9; }
+body.dark .school-item.active { background: #334155; color: #f1f5f9; }
+body.dark .main { background: #0f172a; }
+body.dark .section { background: #1e293b; border-color: #334155; }
+body.dark .sec-title { color: #e2e8f0; }
+body.dark .stat { background: #1e293b; }
+body.dark .stat-label { color: #94a3b8; }
+body.dark .stat-value { color: #f1f5f9; }
+body.dark .teacher-row { border-color: #334155; }
+body.dark .t-name { color: #e2e8f0; }
+body.dark .ticket-card { background: #1e293b; border-color: #334155; }
+body.dark .modal { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+body.dark .modal-title { color: #f1f5f9; }
+body.dark .form-group input, body.dark .form-group select { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+body.dark .school-block { background: #0f172a; border-color: #334155; }
+body.dark .doc-name { color: #e2e8f0; }
+body.dark .empty { color: #64748b; }
+body.dark .sec-btn { background: #334155; color: #94a3b8; border-color: #475569; }
+body.dark .sec-btn:hover { background: #475569; }
+    //darkmode    
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: Arial; display: flex; height: 100vh; overflow: hidden; }
 
@@ -11,7 +37,6 @@ body { font-family: Arial; display: flex; height: 100vh; overflow: hidden; }
 .sidebar-top { padding: 12px; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 8px; }
 .sidebar-top input { width: 100%; padding: 7px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
 .sidebar-list { flex: 1; overflow-y: auto; padding: 8px; min-height: 0; }
-.region-label { font-size: 10px; color: #aaa; padding: 8px 8px 2px; margin-top: 4px; text-transform: uppercase; }
 .school-item { padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; color: #555; display: flex; align-items: center; gap: 8px; user-select: none; }
 .school-item:hover { background: #f5f5f5; color: #111; }
 .school-item.active { background: #f0f0f0; color: #111; font-weight: bold; }
@@ -55,10 +80,38 @@ body { font-family: Arial; display: flex; height: 100vh; overflow: hidden; }
 .preview-panel { position: fixed; top: 0; right: 0; width: 50%; height: 100%; background: #111; display: none; padding: 10px; z-index: 100; }
 .preview-panel img { max-width: 100%; max-height: 90%; margin-top: 10px; }
 
-.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.3); display: none; align-items: center; justify-content: center; z-index: 200; }
-.modal-backdrop.open { display: flex; }
-.modal { background: #fff; border-radius: 12px; border: 1px solid #eee; padding: 1.5rem; width: 520px; max-width: 95vw; max-height: 85vh; overflow-y: auto; }
+.modal-backdrop { 
+    position: fixed; 
+    inset: 0; 
+    background: rgba(0,0,0,0.4); /* ปรับให้เข้มขึ้นนิดหน่อยจะดูสวยขึ้น */
+    display: none; /* เริ่มต้นซ่อนไว้ */
+    align-items: center; 
+    justify-content: center; 
+    z-index: 200; 
+    backdrop-filter: blur(2px); /* เพิ่มเอฟเฟกต์เบลอหลัง modal */
+}
+/* คลาสนี้จะถูกใช้เมื่อสั่งผ่าน JavaScript */
+.modal-backdrop.open { 
+    display: flex !important; 
+}
+.modal { 
+    background: #fff; 
+    border-radius: 20px; /* ปรับให้มนตามดีไซน์ใหม่ */
+    border: none; 
+    padding: 0; /* เอา padding ออกเพื่อให้ header/footer ชิดขอบ */
+    width: 600px; 
+    max-width: 95vw; 
+    max-height: 85vh; 
+    display: flex;
+    flex-direction: column; /* จัดเรียงแบบบนลงล่าง */
+    overflow: hidden; /* ห้าม scroll ที่ตัวนี้ */
+}
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+.modal-body { 
+    padding: 24px; 
+    overflow-y: auto; /* เลื่อนเฉพาะตรงนี้ */
+    flex: 1; /* กินพื้นที่ที่เหลือทั้งหมด */
+}
 .modal-title { font-size: 15px; font-weight: bold; color: #111; }
 .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: #aaa; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -66,94 +119,90 @@ body { font-family: Arial; display: flex; height: 100vh; overflow: hidden; }
 .form-group.full { grid-column: 1 / -1; }
 .form-label { font-size: 11px; color: #888; }
 .form-group input, .form-group select { padding: 7px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; background: #fff; color: #111; font-family: Arial; }
-.teacher-form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid #f0f0f0; }
-.btn-remove { background: none; border: 1px solid #fca5a5; border-radius: 6px; padding: 5px 8px; cursor: pointer; color: #ef4444; font-size: 12px; }
-.btn-add-teacher { font-size: 12px; padding: 6px 14px; border: 1px dashed #ddd; border-radius: 6px; background: none; cursor: pointer; color: #555; width: 100%; margin-top: 8px; }
-.btn-add-teacher:hover { background: #f5f5f5; }
-.form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.25rem; }
+.form-actions { 
+    display: flex; 
+    justify-content: flex-end; 
+    gap: 8px; 
+    padding: 18px 24px; 
+    background: #f8fafc; 
+    border-top: 1px solid #f1f5f9; 
+    margin-top: 0; /* เอา margin เดิมออก */
+}
 .btn-cancel { font-size: 13px; padding: 7px 16px; border: 1px solid #ddd; border-radius: 6px; background: none; cursor: pointer; color: #555; }
 .btn-save { font-size: 13px; padding: 7px 16px; border: 1px solid #ddd; border-radius: 6px; background: none; cursor: pointer; color: #111; font-weight: bold; }
 .btn-save:hover { background: #f5f5f5; }
 
+/* school block ใน form */
+.school-block { border: 1px solid #eee; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+.school-block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.school-block-title { font-size: 13px; font-weight: bold; color: #111; }
+.btn-remove-school { background: none; border: 1px solid #fca5a5; border-radius: 6px; padding: 3px 8px; cursor: pointer; color: #ef4444; font-size: 12px; }
+.school-fee-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.teacher-form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #f5f5f5; }
+.teacher-form-row input { padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; }
+.btn-remove { background: none; border: 1px solid #fca5a5; border-radius: 6px; padding: 4px 7px; cursor: pointer; color: #ef4444; font-size: 11px; }
+.btn-add-teacher { font-size: 12px; padding: 5px 12px; border: 1px dashed #ddd; border-radius: 6px; background: none; cursor: pointer; color: #555; width: 100%; margin-top: 6px; }
+.btn-add-teacher:hover { background: #f5f5f5; }
+.btn-add-school { font-size: 13px; padding: 7px; border: 1px dashed #ddd; border-radius: 8px; background: none; cursor: pointer; color: #555; width: 100%; margin-top: 4px; }
+.btn-add-school:hover { background: #f5f5f5; }
+
+/* ticket card */
 .ticket-card { border: 1px solid #eee; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 10px; }
 .ticket-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-.ticket-school { font-size: 15px; font-weight: bold; color: #111; }
-.ticket-meta { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 8px; }
+.ticket-title { font-size: 14px; font-weight: bold; color: #111; }
+.ticket-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
 .ticket-meta span { font-size: 12px; color: #666; }
-.ticket-teachers-list { margin: 8px 0; }
-.ticket-teacher-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; color: #111; }
+.status-pending { font-size: 11px; padding: 3px 10px; border-radius: 6px; background: #fef9c3; color: #ca8a04; flex-shrink: 0; }
+.status-done { font-size: 11px; padding: 3px 10px; border-radius: 6px; background: #dcfce7; color: #16a34a; flex-shrink: 0; }
+.ticket-school-block { border: 1px solid #f0f0f0; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+.ticket-school-name { font-size: 13px; font-weight: bold; color: #111; margin-bottom: 6px; }
+.money-row { display: flex; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.money-box { border-radius: 6px; padding: 6px 12px; text-align: center; }
+.money-label { font-size: 10px; margin-bottom: 2px; }
+.money-value { font-size: 14px; font-weight: bold; }
+.ticket-teacher-item { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 13px; transition: background 0.2s ease; }
 .ticket-actions { display: flex; gap: 8px; padding-top: 8px; border-top: 1px solid #f0f0f0; margin-top: 4px; }
 .btn-done { font-size: 12px; padding: 5px 14px; border: 1px solid #86efac; border-radius: 6px; background: none; cursor: pointer; color: #16a34a; font-weight: bold; }
 .btn-done:hover { background: #dcfce7; }
 .btn-del { font-size: 12px; padding: 5px 10px; border: 1px solid #eee; border-radius: 6px; background: none; cursor: pointer; color: #aaa; }
-.status-pending { font-size: 11px; padding: 3px 10px; border-radius: 6px; background: #fef9c3; color: #ca8a04; }
-.ticket-fab { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
-.ticket-fab:hover { background: #f5f5f5; }
-.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #111; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; display: none; z-index: 999; }
+.ticket-fab {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+.ticket-fab:hover { transform: scale(1.1); background: #1d4ed8; }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #111; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; display: none; z-index: 999; white-space: nowrap; }
 </style>
 </head>
-<div class="modal-backdrop" id="editModal" onclick="handleEditBackdrop(event)">
-    <div class="modal">
-        <div class="modal-header">
-            <div class="modal-title">แก้ไข ticket</div>
-            <button class="modal-close" onclick="closeEditModal()">✕</button>
-        </div>
-        <input type="hidden" id="editId">
-        <div class="form-grid">
-            <div class="form-group">
-                <div class="form-label">โรงเรียน</div>
-                <select id="eSchool"></select>
-            </div>
-            <div class="form-group">
-                <div class="form-label">ผู้ประสานงาน</div>
-                <input type="text" id="eCoord" placeholder="ชื่อผู้ประสานงาน">
-            </div>
-            <div class="form-group">
-                <div class="form-label">ค่าอบรม (บาท)</div>
-                <input type="number" id="eFee" placeholder="0">
-            </div>
-            <div class="form-group">
-                <div class="form-label">ค่าใช้จ่าย/เดินทาง (บาท)</div>
-                <input type="number" id="eExpense" placeholder="0">
-            </div>
-            <div class="form-group">
-                <div class="form-label">วันที่อบรม</div>
-                <input type="date" id="eDate">
-            </div>
-            <div class="form-group">
-                <div class="form-label">สถานที่อบรม</div>
-                <input type="text" id="eAddr" placeholder="สถานที่">
-            </div>
-        </div>
-        <div style="margin-top:1rem;">
-            <div style="font-size:12px; font-weight:bold; color:#111; margin-bottom:8px;">รายชื่อครู</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; font-size:11px; color:#aaa; padding-bottom:4px;">
-                <span>ชื่อ-นามสกุล</span><span>ระดับ</span><span>หลักสูตร</span><span></span>
-            </div>
-            <div id="editTeacherFormList"></div>
-            <button class="btn-add-teacher" onclick="addEditTeacherRow()">+ เพิ่มครู</button>
-        </div>
-        <div class="form-actions">
-            <button class="btn-cancel" onclick="closeEditModal()">ยกเลิก</button>
-            <button class="btn-save" onclick="submitEdit()">บันทึก</button>
-        </div>
-    </div>
-</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <body>
-
 <div class="sidebar">
     <div class="sidebar-top">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:14px; font-weight:bold; color:#111;">Data Center</span>
-            <button onclick="reindex()" style="font-size:12px; padding:4px 10px; border:1px solid #ddd; border-radius:6px; background:none; cursor:pointer; color:#555;">🔄 Reindex</button>
+        <span style="font-size:14px; font-weight:bold; color:#111;">Data Center</span>
+        <div style="display:flex; gap:4px;">
+            <button onclick="toggleDark()" id="darkBtn" style="font-size:12px; padding:4px 8px; border:1px solid #ddd; border-radius:6px; background:none; cursor:pointer;">🌙</button>
+            <button onclick="reindex()" style="font-size:12px; padding:4px 8px; border:1px solid #ddd; border-radius:6px; background:none; cursor:pointer; color:#555;">🔄</button>
         </div>
-        <input id="searchInput" placeholder="ค้นหาไฟล์..." oninput="searchFiles(this.value)">
+    </div>
+        <input id="searchInput" placeholder="ค้นหาไฟล์..."oninput="searchFiles(this.value)">
     </div>
     <div class="sidebar-list" id="schoolList">
         <div class="empty">กำลังโหลด...</div>
     </div>
     <div style="padding:8px; border-top:1px solid #eee;">
         <div class="school-item" id="ticketNavItem" onclick="showTicketPage(this)">🎫 ticket อบรม</div>
+        <div class="school-item" onclick="showTeacherSearch(this)">🔍 ค้นหาครู</div>
     </div>
 </div>
 
@@ -169,49 +218,85 @@ body { font-family: Arial; display: flex; height: 100vh; overflow: hidden; }
     <img id="previewImg">
 </div>
 
+<!-- Modal เพิ่ม/แก้ไข ticket -->
 <div class="modal-backdrop" id="ticketModal" onclick="handleBackdrop(event)">
-    <div class="modal">
-        <div class="modal-header">
-            <div class="modal-title">เพิ่ม ticket อบรม</div>
-            <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal" style="display: flex; flex-direction: column; background: #fff; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: none; overflow: hidden; width: 90%; max-width: 600px; max-height: 85vh;">
+        
+        <div class="modal-header" style="flex-shrink: 0; background: #fff; border-bottom: 1px solid #f1f5f9; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;">
+            <div class="modal-title" id="modalTitle" style="font-size: 20px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px;">🎫 เพิ่ม Ticket อบรม</div>
+            <button class="modal-close" onclick="closeModal()" style="background: #f1f5f9; border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;">✕</button>
         </div>
-        <div class="form-grid">
-            <div class="form-group">
-                <div class="form-label">โรงเรียน</div>
-                <select id="tSchool"></select>
+        
+        <div class="modal-body" style="flex: 1; padding: 24px; overflow-y: auto; background: #fff;">
+            <div style="background: #f8fafc; padding: 18px; border-radius: 16px; margin-bottom: 20px; border: 1px solid #f1f5f9;">
+                <div class="form-group" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 4px;">
+                    <label style="display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 6px;">👤 ผู้ประสานงาน</label>
+                    <input type="text" id="tCoord" placeholder="ระบุชื่อผู้ประสานงาน..." style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px;">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 6px;">🗓️ ตั้งแต่วันที่</label>
+                        <input type="date" id="tStartDate" style="width: 100%; padding: 11px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px;">
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 6px;">🗓️ จนถึงวันที่</label>
+                        <input type="date" id="tEndDate" style="width: 100%; padding: 11px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px;">
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 6px;">💰 ยอดเงินที่เบิกทั้งหมด</label>
+                    <div style="position: relative;">
+                        <input type="number" id="tTotalFee" placeholder="0.00" style="width: 100%; padding: 12px 12px 12px 35px; border: 2px solid #fde68a; background: #fffdf2; border-radius: 10px; font-weight: 800; font-size: 18px; color: #b45309;">
+                        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #b45309; font-weight: 800;">฿</span>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <div class="form-label">ผู้ประสานงาน</div>
-                <input type="text" id="tCoord" placeholder="ชื่อผู้ประสานงาน">
+
+            <div class="form-group" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 4px;">
+                <label style="display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 6px;">📍 สถานที่อบรม</label>
+                <input type="text" id="tAddr" placeholder="ระบุสถานที่..." style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px;">
             </div>
-            <div class="form-group">
-                <div class="form-label">ค่าอบรม (บาท)</div>
-                <input type="number" id="tFee" placeholder="0">
+
+            <div class="form-group" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 4px;">
+                <label style="display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 6px;">📝 หมายเหตุ</label>
+                <textarea id="tNote" placeholder="รายละเอียดเพิ่มเติม..." rows="3" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px; font-family: inherit; resize: vertical;"></textarea>
             </div>
-            <div class="form-group">
-                <div class="form-label">ค่าใช้จ่าย/เดินทาง (บาท)</div>
-                <input type="number" id="tExpense" placeholder="0">
+
+            <input type="hidden" id="tId">
+
+            <div style="display: flex; align-items: center; justify-content: space-between; margin: 24px 0 12px;">
+                <div style="font-size: 15px; font-weight: 800; color: #1e293b;">🏫 โรงเรียนที่เข้าร่วม</div>
+                <button type="button" class="btn-add-school" onclick="addSchoolBlock()" style="background: #eff6ff; color: #2563eb; border: 1px dashed #2563eb; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;">+ เพิ่มโรงเรียน</button>
             </div>
-            <div class="form-group">
-                <div class="form-label">วันที่อบรม</div>
-                <input type="date" id="tDate">
-            </div>
-            <div class="form-group">
-                <div class="form-label">สถานที่อบรม</div>
-                <input type="text" id="tAddr" placeholder="สถานที่">
-            </div>
+            
+            <div id="schoolBlockList"></div>
         </div>
-        <div style="margin-top:1rem;">
-            <div style="font-size:12px; font-weight:bold; color:#111; margin-bottom:8px;">รายชื่อครู</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; font-size:11px; color:#aaa; padding-bottom:4px;">
-                <span>ชื่อ-นามสกุล</span><span>ระดับ</span><span>หลักสูตร</span><span></span>
-            </div>
-            <div id="teacherFormList"></div>
-            <button class="btn-add-teacher" onclick="addTeacherRow()">+ เพิ่มครู</button>
+
+        <div class="form-actions" style="flex-shrink: 0; padding: 18px 24px; background: #f8fafc; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 12px;">
+            <button type="button" class="btn-cancel" onclick="closeModal()" style="background: transparent; color: #64748b; border: none; font-weight: 600; cursor: pointer; padding: 10px 16px;">ยกเลิก</button>
+            <button type="button" class="btn-save" onclick="submitTicket()" style="background: #2563eb; color: white; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">บันทึกข้อมูล Ticket</button>
         </div>
-        <div class="form-actions">
-            <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
-            <button class="btn-save" onclick="submitTicket()">บันทึก ticket</button>
+    </div>
+</div>
+
+
+<!-- Teacher History Modal -->
+<div class="modal-backdrop" id="historyModal" onclick="if(event.target.id==='historyModal') closeHistoryModal()" style="display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); background: rgba(0,0,0,0.5);">
+    <div class="modal" style="width: 100%; max-width: 480px; max-height: 85vh; display: flex; flex-direction: column; background: #fff; border-radius: 20px; overflow: hidden; border: none; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+        
+        <div class="modal-header" style="padding: 20px 24px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+            <div class="modal-title" id="historyTitle" style="font-size: 18px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px;">ประวัติการอบรม</div>
+            <button class="modal-close" onclick="closeHistoryModal()" style="background: #f1f5f9; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+        </div>
+
+        <div id="historyContent" style="padding: 20px 24px; overflow-y: auto; flex: 1; background: #fff; scrollbar-width: thin;">
+            <div class="empty">กำลังโหลด...</div>
+        </div>
+
+        <div style="padding: 12px 24px; background: #f8fafc; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end;">
+            <button onclick="closeHistoryModal()" style="background: #e2e8f0; color: #475569; border: none; padding: 8px 20px; border-radius: 10px; font-weight: 600; font-size: 13px; cursor: pointer;">ปิดหน้าต่าง</button>
         </div>
     </div>
 </div>
@@ -221,8 +306,8 @@ body { font-family: Arial; display: flex; height: 100vh; overflow: hidden; }
 <script>
 let currentSchool = null;
 let allSchools = [];
-let tickets = [];
-let teacherRows = [];
+let schoolBlocks = [];
+let editingTicketId = null;
 
 // ── SCHOOLS ──────────────────────────────
 
@@ -234,10 +319,7 @@ async function loadSchools() {
 
 function renderSchoolList(schools) {
     let list = document.getElementById("schoolList");
-    if (schools.length === 0) {
-        list.innerHTML = '<div class="empty">ไม่พบโรงเรียน</div>';
-        return;
-    }
+    if (schools.length === 0) { list.innerHTML = '<div class="empty">ไม่พบโรงเรียน</div>'; return; }
     list.innerHTML = schools.map(s => `
         <div class="school-item" onclick="selectSchool(this, '${s}')">🏫 ${s}</div>
     `).join("");
@@ -254,142 +336,261 @@ async function selectSchool(el, name) {
         fetch(`/api/school-files?school=${encodeURIComponent(name)}`).then(r => r.json()),
         fetch(`/api/school-tickets?school=${encodeURIComponent(name)}`).then(r => r.json()),
     ]);
-
     renderSchool(name, teachers, files, schoolTickets);
 }
 
-async function loadTickets() {
-    let [pending, done] = await Promise.all([
-        fetch("/api/tickets").then(r => r.json()),
-        fetch("/api/tickets/done").then(r => r.json()),
-    ]);
-    tickets = pending;
-    renderTicketPage(pending, done);
+function renderSchool(name, teachers, files, schoolTickets = []) {
+    let images = files.images || [];
+    let documents = files.documents || [];
+    window._currentImages = images;
+    window._currentDocs = documents;
+
+    // 1. Logic การคำนวณเงินสะสม (คงเดิมเพื่อความถูกต้อง)
+    const totalFee = schoolTickets.reduce((sum, t) => sum + (parseFloat(t.fee) || 0), 0);
+    window.schoolAccumulatedExpense = 0;
+
+    // 2. เตรียม HTML รายชื่อครู (ปรับขนาดวิชาและระดับให้ใหญ่ขึ้น)
+    let teacherHTML = teachers.length === 0
+        ? '<div class="empty">ยังไม่มีข้อมูลครู</div>'
+        : teachers.map(t => `
+            <div class="teacher-row" 
+                 style="cursor:pointer; display:flex; align-items:center; gap:12px; padding:12px; border-bottom:1px solid #f8fafc; transition: background 0.2s; border-radius:12px;" 
+                 onmouseover="this.style.background='#f0f7ff'" 
+                 onmouseout="this.style.background='white'"
+                 onclick="showTeacherHistory('${t.name.replace(/'/g,"\\'")}','${name.replace(/'/g,"\\")}')">
+                <div class="avatar" style="width:38px; height:38px; background:#f1f5f9; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#64748b;">${getInitials(t.name)}</div>
+                <div style="flex:1;">
+                    <div class="t-name" style="font-size:14px; color:#2563eb; font-weight:600; text-decoration:underline;">${t.name}</div>
+                    <div style="font-size:13px; color:#334155; margin-top:4px; font-weight:500; display:flex; gap:10px; align-items:center;">
+                        <span style="color:#64748b;">วิชา:</span>
+                        <span style="color:#1e293b;">${t.course || 'ไม่ระบุ'}</span>
+                        ${t.level ? `<span style="color:#16a34a; background:#f0fdf4; padding:1px 6px; border-radius:4px; font-weight:600;">${t.level}</span>` : ""}
+                    </div>
+                </div>
+                <div style="font-size:11px; color:#2563eb; opacity:0.6;">ประวัติ ↗</div>
+            </div>`).join("");
+
+    // 3. เตรียม HTML รูปภาพกิจกรรม (Carousel ขนาด Modern)
+ let imgHTML = "";
+if (images.length === 0) {
+    imgHTML = '<div class="empty">ไม่มีรูปภาพกิจกรรม</div>';
+} else {
+    imgHTML = `
+        <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:10px; padding:0 5px;">
+            <button onclick="showAllImages()" style="background:#eff6ff; color:#2563eb; border:none; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; transition:0.2s;">
+                ดูรูปทั้งหมด (${images.length}) ➔
+            </button>
+        </div>
+
+        <div class="modern-slider" style="position:relative; margin: 10px -5px;">
+            <button onclick="scrollImages('left')" style="position:absolute; left:-10px; top:50%; transform:translateY(-50%); z-index:10; background:#fff; border:none; border-radius:50%; width:35px; height:35px; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center; color:#64748b;">❮</button>
+            <div id="imageTrack" style="display:flex; gap:12px; overflow-x:auto; scroll-behavior:smooth; padding:10px 5px; scrollbar-width:none; -ms-overflow-style:none;">
+                ${images.map(img => {
+                    let url = "/files/" + img.path.split("/").map(encodeURIComponent).join("/");
+                    return `
+                        <div class="img-card" style="flex:0 0 280px; height:180px; border-radius:16px; overflow:hidden; border:1px solid #f1f5f9; cursor:pointer; background:#f8fafc; transition:all 0.2s; box-shadow:0 4px 15px rgba(0,0,0,0.05);" 
+                             onclick="showImage('${img.path}')">
+                            <img src="${url}" style="width:100%; height:100%; object-fit:cover;" onerror="this.parentElement.innerHTML='🖼️'">
+                        </div>`;
+                }).join("")}
+            </div>
+            <button onclick="scrollImages('right')" style="position:absolute; right:-10px; top:50%; transform:translateY(-50%); z-index:10; background:#fff; border:none; border-radius:50%; width:35px; height:35px; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center; color:#64748b;">❯</button>
+        </div>
+        <style>#imageTrack::-webkit-scrollbar { display: none; }</style>
+    `;
 }
 
-function renderTicketPage(pending, done) {
-    let totalFee = [...pending, ...done].reduce((s, t) => s + (t.fee||0), 0);
-    let totalExp = [...pending, ...done].reduce((s, t) => s + (t.expense||0), 0);
-
-    let pendingHTML = pending.length === 0
-        ? '<div class="empty" style="text-align:center;padding:1.5rem;">ไม่มี ticket ที่กำลังดำเนินการ</div>'
-        : pending.map(t => ticketCardHTML(t, false)).join("");
-
-    let doneHTML = done.length === 0
-        ? '<div class="empty" style="text-align:center;padding:1rem;">ยังไม่มี ticket ที่เสร็จสิ้น</div>'
-        : done.map(t => ticketCardHTML(t, true)).join("");
-
-    document.getElementById("main").innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-            <div>
-                <div style="font-size:20px; font-weight:bold; color:#111;">ticket อบรม</div>
-                <div style="font-size:12px; color:#888; margin-top:4px;">จัดการ ticket การอบรมครู</div>
+    // 4. ส่วน Ticket Container (Compact)
+    let ticketSection = schoolTickets.length === 0 ? "" : `
+    <div class="section" style="background:#fff; border-radius:16px; padding:16px; margin-bottom:15px; border:1px solid #f1f5f9; box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column;">
+        <div style="font-size:14px; font-weight:800; color:#1e293b; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:18px;">🎫</span> รายการ Ticket
             </div>
-            <button class="ticket-fab" onclick="openModal()">+</button>
+            <span style="background:#f1f5f9; color:#64748b; font-size:11px; padding:2px 10px; border-radius:20px;">${schoolTickets.length}</span>
         </div>
-
-        <div class="stats" style="margin-bottom:1.25rem;">
-            <div class="stat">
-                <div class="stat-label">ทั้งหมด</div>
-                <div class="stat-value">${pending.length + done.length}</div>
-            </div>
-            <div class="stat">
-                <div class="stat-label">กำลังดำเนินการ</div>
-                <div class="stat-value" style="color:#ca8a04;">${pending.length}</div>
-            </div>
-            <div class="stat">
-                <div class="stat-label">เสร็จสิ้นแล้ว</div>
-                <div class="stat-value" style="color:#16a34a;">${done.length}</div>
-            </div>
+        
+        <div style="max-height: 250px; overflow-y: auto; padding-right: 4px; scrollbar-width: thin;">
+            ${schoolTickets.map(t => `
+                <div style="padding:10px; border: 1px solid #f8fafc; border-radius:12px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; gap:10px; background: #fafafa;">
+                    <div style="flex:1; min-width: 0;">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <div style="font-size:13px; font-weight:700; color:#334155; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">👤 ${t.coordinator || "ทั่วไป"}</div>
+                            <div style="font-size:9px; padding:1px 6px; border-radius:4px; font-weight:600; 
+                                 background:${t.done ? '#dcfce7' : '#fef9c3'}; color:${t.done ? '#15803d' : '#a16207'}; flex-shrink:0;">
+                                ${t.done ? "OK" : "⏳"}
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px; font-size:10px; color:#94a3b8; margin-top:2px;">
+                            <span>🗓️ ${t.start_date || "-"}</span>
+                            ${t.note ? `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px;">💬 ${t.note}</span>` : ""}
+                        </div>
+                    </div>
+                    
+                    <div id="schoolTicketMoney_${t.id}" style="text-align:right; flex-shrink:0;">
+                        <div style="font-size:13px; font-weight:800; color:#2563eb;">
+                            <span style="font-size:10px; color:#cbd5e1; font-weight:400;">...</span>
+                        </div>
+                    </div>
+                </div>
+            `).join("")}
         </div>
+    </div>`;
 
-        <div class="stats" style="margin-bottom:1.25rem;">
-            <div class="stat">
-                <div class="stat-label">ค่าอบรมรวม</div>
-                <div class="stat-value" style="font-size:16px;">${totalFee.toLocaleString()} ฿</div>
-            </div>
-            <div class="stat">
-                <div class="stat-label">ค่าใช้จ่ายรวม</div>
-                <div class="stat-value" style="font-size:16px;">${totalExp.toLocaleString()} ฿</div>
-            </div>
-            <div class="stat">
-                <div class="stat-label">รวมทั้งสิ้น</div>
-                <div class="stat-value" style="font-size:16px;">${(totalFee+totalExp).toLocaleString()} ฿</div>
-            </div>
+    // 5. Render หน้าหลัก (จัดลำดับกลุ่มใหม่)
+   document.getElementById("main").innerHTML = `
+    <div style="padding: 0 5px 20px 5px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+            <h2 style="font-size:24px; color:#0f172a; font-weight:800;">โรงเรียน${name}</h2>
+            <button onclick="exportSchoolExcel('${name.replace(/'/g,"\\'")}')
+" style="padding:8px 16px; background:#16a34a; color:white; border:none; border-radius:8px; font-size:13px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px; flex-shrink:0;">
+                📥 Export Excel
+            </button>
         </div>
+        <p style="font-size:13px; color:#64748b; margin-bottom:20px;">สถิติข้อมูลกิจกรรมและการเงินปี 2026</p>
 
-        <div class="section">
-            <div class="sec-header">
-                <div class="sec-title">🕐 กำลังดำเนินการ (${pending.length})</div>
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-bottom:20px;">
+                <div style="background:#fff; padding:15px; border-radius:16px; border:1px solid #e2e8f0; text-align:center;">
+                    <div style="font-size:11px; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; margin-bottom:4px;">ครู</div>
+                    <div style="font-size:20px; font-weight:800; color:#1e293b;">${teachers.length}</div>
+                </div>
+                <div style="background:#fff9c4; padding:15px; border-radius:16px; border:1px solid #fef08a; text-align:center;">
+                    <div style="font-size:11px; color:#854d0e; text-transform:uppercase; font-weight:600; margin-bottom:4px;">เบิกสะสม</div>
+                    <div style="font-size:20px; font-weight:800; color:#ca8a04;">${totalFee.toLocaleString()}</div>
+                </div>
+                <div style="background:#f0fdf4; padding:15px; border-radius:16px; border:1px solid #bbf7d0; text-align:center;">
+                    <div style="font-size:11px; color:#166534; text-transform:uppercase; font-weight:600; margin-bottom:4px;">ใช้จริง</div>
+                    <div id="totalSchoolExpense" style="font-size:20px; font-weight:800; color:#16a34a;">0</div>
+                </div>
             </div>
-            <div id="ticketPending">${pendingHTML}</div>
-        </div>
 
-        <div class="section">
-            <div class="sec-header">
-                <div class="sec-title">✅ เสร็จสิ้นแล้ว (${done.length})</div>
+            ${ticketSection}
+
+            <div class="section" style="background:#fff; border-radius:16px; padding:18px; margin-bottom:15px; border:1px solid #f1f5f9;">
+                <div style="font-size:15px; font-weight:700; color:#334155; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:19px;">👥</span> รายชื่อคณะครู
+                </div>
+                <div style="display:flex; flex-direction:column;">
+                    ${teacherHTML}
+                </div>
             </div>
-            <div id="ticketDone">${doneHTML}</div>
+
+            <div class="section" style="background:#fff; border-radius:16px; padding:18px; margin-bottom:15px; border:1px solid #f1f5f9;">
+                <div style="font-size:15px; font-weight:700; color:#334155; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:19px;">📸</span> รูปภาพกิจกรรม
+                </div>
+                ${imgHTML}
+            </div>
+
+            <div class="section" style="background:#fff; border-radius:16px; padding:18px; border:1px solid #f1f5f9;">
+                <div style="font-size:15px; font-weight:700; color:#334155; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:19px;">📁</span> เอกสารที่เกี่ยวข้อง
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    ${documents.slice(0,5).map(d => `
+                        <div onclick="openFile('${d.path}')" style="display:flex; align-items:center; padding:12px; background:#f8fafc; border-radius:12px; cursor:pointer; transition: background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+                            <span style="font-size:20px; margin-right:12px;">${getIcon(d.name)}</span>
+                            <div style="flex:1; font-size:13px; color:#1e293b; font-weight:500;">${d.name}</div>
+                            <span style="font-size:11px; color:#2563eb; font-weight:700;">เปิดดู ↗</span>
+                        </div>
+                    `).join("")}
+                </div>
+            </div>
         </div>
     `;
 
-    [...pending, ...done].forEach(t => loadTicketTeachers(t.id));
+    // เรียกโหลดเงินราย Ticket (คงเดิม)
+    window.schoolAccumulatedExpense = 0;
+schoolTickets.forEach(t => loadSchoolTicketMoney(t.id, name, t.fee));
 }
 
-function ticketCardHTML(t, isDone) {
-    return `
-        <div class="ticket-card" style="${isDone ? 'opacity:0.7;' : ''}">
-            <div class="ticket-top">
-                <div class="ticket-school">🏫 โรงเรียน${t.school}</div>
-                <div class="status-pending" style="${isDone ? 'background:#dcfce7;color:#16a34a;' : ''}">
-                    ${isDone ? "✅ เสร็จสิ้น" : "รอดำเนินการ"}
-                </div>
+function scrollImages(direction) {
+    const track = document.getElementById('imageTrack');
+    const scrollAmount = 300; 
+    track.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+}
+
+
+
+async function loadSchoolTicketMoney(ticketId, school, ticketFee) {
+    let el = document.getElementById("schoolTicketMoney_" + ticketId);
+    if (!el) return;
+
+    try {
+        let schools = await fetch("/api/ticket-schools?ticket_id=" + ticketId).then(r => r.json());
+        let s = schools.find(item => item.school === school);
+        
+        if (!s) { 
+            el.innerHTML = ""; 
+            return; 
+        }
+
+        let expense = parseFloat(s.expense) || 0;
+        
+        // 1. อัปเดตยอดใช้จริงสะสมที่ Stat ด้านบน
+        window.schoolAccumulatedExpense += expense;
+        const totalDisplay = document.getElementById("totalSchoolExpense");
+        if (totalDisplay) {
+            totalDisplay.innerText = window.schoolAccumulatedExpense.toLocaleString() + " ฿";
+        }
+
+        // 2. คำนวณคงเหลือของใบเบิกนี้ (ยอดเบิก - ยอดใช้ของทุกโรงเรียนใน Ticket นี้)
+        let totalExpenseOfTicket = schools.reduce((sum, item) => sum + (parseFloat(item.expense) || 0), 0);
+        let balance = (parseFloat(ticketFee) || 0) - totalExpenseOfTicket;
+        let balanceColor = balance >= 0 ? "#16a34a" : "#dc2626";
+
+        el.innerHTML = `
+            <div class="money-box" style="background:#fef9c3; padding:4px 8px; border-radius:6px; text-align:center; min-width:80px;">
+                <div style="font-size:9px; color:#a16207;">เบิก</div>
+                <div style="font-size:12px; font-weight:bold; color:#ca8a04;">${Number(ticketFee || 0).toLocaleString()}</div>
             </div>
-            <div class="ticket-meta">
-                ${t.coordinator ? `<span>👤 ${t.coordinator}</span>` : ""}
-                ${t.date ? `<span>📅 ${t.date}</span>` : ""}
-                ${t.addr ? `<span>📍 ${t.addr}</span>` : ""}
+            <div class="money-box" style="background:#f0fdf4; padding:4px 8px; border-radius:6px; text-align:center; min-width:80px;">
+                <div style="font-size:9px; color:#15803d;">ใช้จริง</div>
+                <div style="font-size:12px; font-weight:bold; color:#16a34a;">${expense.toLocaleString()}</div>
             </div>
-            <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
-                ${t.fee ? `<div style="background:#fef9c3; border-radius:8px; padding:8px 14px; text-align:center;">
-                    <div style="font-size:10px; color:#a16207;">ค่าอบรม</div>
-                    <div style="font-size:15px; font-weight:bold; color:#ca8a04;">${Number(t.fee).toLocaleString()} ฿</div>
-                </div>` : ""}
-                ${t.expense ? `<div style="background:#f0fdf4; border-radius:8px; padding:8px 14px; text-align:center;">
-                    <div style="font-size:10px; color:#15803d;">ค่าใช้จ่าย</div>
-                    <div style="font-size:15px; font-weight:bold; color:#16a34a;">${Number(t.expense).toLocaleString()} ฿</div>
-                </div>` : ""}
-                ${(t.fee||t.expense) ? `<div style="background:#f5f5f5; border-radius:8px; padding:8px 14px; text-align:center;">
-                    <div style="font-size:10px; color:#888;">รวม</div>
-                    <div style="font-size:15px; font-weight:bold; color:#111;">${Number((t.fee||0)+(t.expense||0)).toLocaleString()} ฿</div>
-                </div>` : ""}
-            </div>
-            <div class="ticket-teachers-list" id="tTeachers_${t.id}">
-                <div class="empty">กำลังโหลด...</div>
-            </div>
-            <div class="ticket-actions">
-                ${!isDone ? `<button class="btn-done" onclick="doneTicket(${t.id})">✓ เสร็จสิ้น</button>` : ""}
-                <button class="sec-btn" onclick="openEditModal(${t.id})">✏️ แก้ไข</button>
-                <button class="btn-del" onclick="deleteTicket(${t.id})">ลบ</button>
-            </div>
-        </div>`;
+            <div class="money-box" style="background:#f5f5f5; padding:4px 8px; border-radius:6px; text-align:center; min-width:80px;">
+                <div style="font-size:9px; color:#888;">คงเหลือ</div>
+                <div style="font-size:12px; font-weight:bold; color:${balanceColor};">${balance.toLocaleString()}</div>
+            </div>`;
+    } catch (err) {
+        el.innerHTML = '<div style="font-size:11px; color:red;">error</div>';
+    }
 }
 
 function showAllImages() {
     let images = window._currentImages || [];
     let html = images.map(img => {
         let url = "/files/" + img.path.split("/").map(encodeURIComponent).join("/");
-        return `<div class="img-thumb" onclick="showImage('${img.path}')">
-            <img src="${url}" onerror="this.parentElement.innerHTML='🖼️'">
-        </div>`;
+        return `
+            <div class="img-thumb" 
+                 style="aspect-ratio:1; border-radius:12px; overflow:hidden; border:1px solid #f1f5f9; cursor:pointer; background:#f8fafc; transition:0.2s;"
+                 onclick="showImage('${img.path}')"
+                 onmouseover="this.style.transform='scale(1.03)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';"
+                 onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
+                <img src="${url}" style="width:100%; height:100%; object-fit:cover;" onerror="this.parentElement.innerHTML='🖼️'">
+            </div>`;
     }).join("");
+
     document.getElementById("main").innerHTML = `
-        <div style="margin-bottom:1rem;">
-            <button class="sec-btn" onclick="selectSchool(document.querySelector('.school-item.active'), '${currentSchool}')">← กลับ</button>
+        <div style="margin-bottom:1.5rem; display:flex; align-items:center; gap:12px;">
+            <button class="sec-btn" 
+                    style="background:#fff; border:1px solid #e2e8f0; padding:8px 16px; border-radius:10px; font-weight:700; color:#64748b; cursor:pointer; transition:0.2s;"
+                    onclick="selectSchool(document.querySelector('.school-item.active'), '${currentSchool}')">
+                ← กลับไปหน้าโรงเรียน
+            </button>
         </div>
-        <div class="section">
-            <div class="sec-header"><div class="sec-title">รูปภาพทั้งหมด (${images.length})</div></div>
-            <div class="img-grid" style="grid-template-columns:repeat(6,1fr);">${html}</div>
+        
+        <div class="section" style="background:#fff; border-radius:20px; padding:24px; border:1px solid #f1f5f9; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
+            <div class="sec-header" style="margin-bottom:20px; display:flex; align-items:center; justify-content:space-between;">
+                <div class="sec-title" style="font-size:18px; font-weight:800; color:#1e293b;">🖼️ รูปภาพกิจกรรมทั้งหมด</div>
+                <div style="background:#f1f5f9; color:#64748b; font-size:12px; padding:4px 12px; border-radius:20px; font-weight:600;">
+                    ${images.length} รูปภาพ
+                </div>
+            </div>
+            
+            <div class="img-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:12px;">
+                ${html}
+            </div>
         </div>`;
 }
 
@@ -410,120 +611,175 @@ function showAllDocs() {
             ${html}
         </div>`;
 }
-// ── EDITER ──────────────────────────
-let editTeacherRows = [];
-
-async function openEditModal(id) {
-    let res = await fetch("/api/ticket-teachers?ticket_id=" + id);
-    let teachers = await res.json();
-    let t = [...tickets].find(t => t.id === id);
-
-    // ถ้าไม่เจอใน pending ให้ดึงจาก done
-    if (!t) {
-        let res2 = await fetch("/api/tickets/done");
-        let done = await res2.json();
-        t = done.find(t => t.id === id);
-    }
-    if (!t) return;
-
-    document.getElementById("editId").value = id;
-    document.getElementById("eSchool").innerHTML = allSchools.map(s =>
-        `<option value="${s}" ${s === t.school ? "selected" : ""}>${s}</option>`
-    ).join("");
-    document.getElementById("eCoord").value = t.coordinator || "";
-    document.getElementById("eFee").value = t.fee || "";
-    document.getElementById("eExpense").value = t.expense || "";
-    document.getElementById("eDate").value = t.date || "";
-    document.getElementById("eAddr").value = t.addr || "";
-
-    editTeacherRows = [];
-    document.getElementById("editTeacherFormList").innerHTML = "";
-    teachers.forEach(t => addEditTeacherRow(t.name, t.level, t.course));
-
-    document.getElementById("editModal").classList.add("open");
-}
-
-function closeEditModal() {
-    document.getElementById("editModal").classList.remove("open");
-}
-
-function handleEditBackdrop(e) {
-    if (e.target === document.getElementById("editModal")) closeEditModal();
-}
-
-function addEditTeacherRow(name="", level="", course="") {
-    let rowId = Date.now() + Math.random();
-    editTeacherRows.push(rowId);
-    let div = document.createElement("div");
-    div.className = "teacher-form-row";
-    div.id = "erow_" + rowId;
-    div.innerHTML = `
-        <input type="text" placeholder="ชื่อ-นามสกุล" id="ename_${rowId}" value="${name}">
-        <input type="text" placeholder="ระดับ" id="elevel_${rowId}" value="${level}">
-        <input type="text" placeholder="หลักสูตร" id="ecourse_${rowId}" value="${course}">
-        <button class="btn-remove" onclick="removeEditTeacherRow(${rowId})">✕</button>
-    `;
-    document.getElementById("editTeacherFormList").appendChild(div);
-}
-
-function removeEditTeacherRow(rowId) {
-    let el = document.getElementById("erow_" + rowId);
-    if (el) el.remove();
-    editTeacherRows = editTeacherRows.filter(r => r !== rowId);
-}
-
-async function submitEdit() {
-    let id = document.getElementById("editId").value;
-    let school = document.getElementById("eSchool").value;
-    let coordinator = document.getElementById("eCoord").value.trim();
-    let fee = parseFloat(document.getElementById("eFee").value) || null;
-    let expense = parseFloat(document.getElementById("eExpense").value) || null;
-    let date = document.getElementById("eDate").value;
-    let addr = document.getElementById("eAddr").value.trim();
-
-    let teachers = editTeacherRows.map(rowId => ({
-        id: null, ticket_id: null,
-        name: document.getElementById("ename_" + rowId)?.value.trim() || "",
-        level: document.getElementById("elevel_" + rowId)?.value.trim() || "",
-        course: document.getElementById("ecourse_" + rowId)?.value.trim() || "",
-    })).filter(t => t.name !== "");
-
-    await fetch(`/api/tickets/${id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: parseInt(id), school, coordinator, fee, expense, date, addr, done: null, teachers })
-    });
-
-    closeEditModal();
-    showToast("แก้ไข ticket เรียบร้อย");
-    loadTickets();
-}
 
 // ── TICKET PAGE ──────────────────────────
 
 function showTicketPage(el) {
+    // 1. ไฮไลท์เมนูที่เลือก
     document.querySelectorAll(".school-item").forEach(i => i.classList.remove("active"));
-    el.classList.add("active");
+    if (el) el.classList.add("active");
+    
     currentSchool = null;
+
     loadTickets();
 }
 
-async function loadTicketTeachers(ticketId) {
-    let el = document.getElementById("tTeachers_" + ticketId);
-    if (!el) return;
-    let res = await fetch("/api/ticket-teachers?ticket_id=" + ticketId);
-    let data = await res.json();
-    el.innerHTML = data.length === 0
-        ? '<div class="empty">ไม่มีรายชื่อครู</div>'
-        : data.map(t => `
-            <div class="ticket-teacher-item">
-                <div class="avatar">${getInitials(t.name)}</div>
-                <span style="flex:1;">${t.name}</span>
-                ${t.level ? `<div class="badge">${t.level}</div>` : ""}
-                ${t.course ? `<div class="course-badge">${t.course}</div>` : ""}
-            </div>
-        `).join("");
+async function loadTickets() {
+    document.getElementById("main").innerHTML = '<div class="no-school">กำลังโหลด...</div>';
+    try {
+        const [pending, done] = await Promise.all([
+            fetch("/api/tickets").then(r => r.json()),
+            fetch("/api/tickets/done").then(r => r.json())
+        ]);
+        renderTicketPage(pending, done);
+    } catch (e) {
+        console.error("LoadTickets Error:", e);
+        document.getElementById("main").innerHTML = '<div style="color:red;padding:20px;">❌ โหลดข้อมูลไม่สำเร็จ</div>';
+    }
 }
+
+async function renderTicketPage(pending, done) {
+    // โหลดข้อมูล schools ที่มี teachers ติดมาด้วยเลย (Nested)
+    let allTickets = [...pending, ...done];
+    let schoolsData = await Promise.all(
+        allTickets.map(t => fetch("/api/ticket-schools?ticket_id=" + t.id).then(r => r.json()))
+    );
+    
+    let ticketSchoolsMap = {};
+    allTickets.forEach((t, i) => ticketSchoolsMap[t.id] = schoolsData[i]);
+
+    let totalTeacherCount = 0;
+    let totalFee = 0;
+    let totalExpense = 0;
+    
+    allTickets.forEach(t => {
+        totalFee += t.fee || 0;  // fee อยู่ระดับ ticket
+        let schools = ticketSchoolsMap[t.id] || [];
+        schools.forEach(s => {
+            totalExpense += s.expense || 0;
+        });
+    });
+
+    // นับครูจาก schools ที่โหลดมาแล้ว (teachers nested อยู่แล้ว)
+    allTickets.forEach(t => {
+        (ticketSchoolsMap[t.id] || []).forEach(s => {
+            totalTeacherCount += (s.teachers || []).length;
+        });
+    });
+
+    // แสดงผล HTML (ส่งข้อมูลที่โหลดมาแล้วเข้าไปใน ticketCardHTML)
+    let pendingHTML = pending.map(t => ticketCardHTML(t, false, ticketSchoolsMap[t.id])).join("");
+    let doneHTML = done.map(t => ticketCardHTML(t, true, ticketSchoolsMap[t.id])).join("");
+
+    document.getElementById("main").innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+            <div>
+                <div style="font-size:20px; font-weight:bold; color:#111;">ticket อบรม</div>
+                <div style="font-size:12px; color:#888; margin-top:4px;">จัดการ ticket การอบรมครู</div>
+            </div>
+            <button class="ticket-fab" onclick="openModal()">+</button>
+        </div>
+
+        <div class="stats" style="margin-bottom:1.25rem;">
+            <div class="stat"><div class="stat-label">ticket ทั้งหมด</div><div class="stat-value">${pending.length + done.length}</div></div>
+            <div class="stat"><div class="stat-label">กำลังดำเนินการ</div><div class="stat-value" style="color:#ca8a04;">${pending.length}</div></div>
+            <div class="stat"><div class="stat-label">เสร็จสิ้นแล้ว</div><div class="stat-value" style="color:#16a34a;">${done.length}</div></div>
+        </div>
+
+        <div class="stats" style="margin-bottom:1.25rem;">
+            <div class="stat"><div class="stat-label">ครูทั้งหมด</div><div class="stat-value">${totalTeacherCount} คน</div></div>
+            <div class="stat"><div class="stat-label">เงินที่เบิก</div><div class="stat-value" style="font-size:16px;">${totalFee.toLocaleString()} ฿</div></div>
+            <div class="stat"><div class="stat-label">เงินที่ใช้จริง</div><div class="stat-value" style="font-size:16px;">${totalExpense.toLocaleString()} ฿</div></div>
+        </div>
+
+        <div class="section">
+            <div class="sec-header"><div class="sec-title">🕐 กำลังดำเนินการ (${pending.length})</div></div>
+            ${pendingHTML}
+        </div>
+        <div class="section">
+            <div class="sec-header"><div class="sec-title">✅ เสร็จสิ้นแล้ว (${done.length})</div></div>
+            ${doneHTML}
+        </div>`;
+}
+
+function ticketCardHTML(t, isDone, schools = []) {
+    const totalFee = t.fee || 0;
+    const totalExpense = schools.reduce((sum, s) => sum + (parseFloat(s.expense) || 0), 0);
+    const balance = totalFee - totalExpense;
+    const balanceColor = balance >= 0 ? "#16a34a" : "#dc2626";
+
+    let schoolsHTML = schools.map(s => {
+        let teachersHTML = (s.teachers || []).map(tc =>
+            `<div class="teacher-item" 
+                  style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;color:#333;cursor:pointer;border-radius:4px;"
+                  onmouseover="this.style.background='#f0f7ff'" 
+                  onmouseout="this.style.background='transparent'"
+                  onclick="showTeacherHistory('${tc.name.replace(/'/g,"\\'")}','${s.school.replace(/'/g,"\\'")}')">
+                
+                <div class="avatar" style="width:24px;height:24px;font-size:10px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;">
+                    ${getInitials(tc.name)}
+                </div>
+                
+                <div style="flex:1; display:flex; flex-direction:column;">
+                    <span style="font-weight:500; color:#2563eb; text-decoration:underline;">${tc.name}</span>
+                    <span style="font-size:10px; color:#666;">📚 ${tc.course || "ไม่มีข้อมูลวิชา"}</span>
+                </div>
+                
+                ${tc.level ? `<div class="badge" style="font-size:9px; background:#f1f5f9; padding:1px 6px; border-radius:10px;">${tc.level}</div>` : ""}
+            </div>`
+        ).join("");
+        
+        return `
+            <div style="background:#f8fafc; border: 1px solid #f1f5f9; border-radius:10px; padding:10px 12px; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <span style="font-size:13px; font-weight:bold; color:#1e293b;">🏫 ${s.school}</span>
+                    ${s.expense ? `<span style="font-size:12px; color:#16a34a; font-weight:bold;">${Number(s.expense).toLocaleString()} ฿</span>` : ""}
+                </div>
+                ${teachersHTML || '<div style="font-size:12px;color:#cbd5e1;text-align:center;padding:5px 0;">ไม่มีรายชื่อครู</div>'}
+            </div>`;
+    }).join("");
+
+    return `
+        <div class="ticket-card" id="ticket_${t.id}" style="border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-radius: 16px; padding: 16px; background: #fff; margin-bottom: 15px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                <div style="flex: 1;">
+                    <div style="font-weight:800; font-size:16px; color:#1e293b; letter-spacing:-0.3px;">${t.coordinator || "ไม่ระบุผู้ประสานงาน"}</div>
+                    <div style="font-size:11px; color:#64748b; margin-top:4px; display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                        <span>🗓️ ${t.start_date || "-"}${t.end_date && t.end_date !== t.start_date ? " → " + t.end_date : ""}</span>
+                        ${t.addr ? `<span>📍 ${t.addr}</span>` : ""}
+                    </div>
+                    ${t.note ? `<div style="font-size:11px; color:#94a3b8; font-style:italic; margin-top:4px;">📝 ${t.note}</div>` : ""}
+                </div>
+                <div style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:700; text-transform:uppercase; background:${isDone ? '#dcfce7' : '#fef9c3'}; color:${isDone ? '#166534' : '#854d0e'};">
+                    ${isDone ? "✅ เสร็จสิ้น" : "⏳ รอดำเนินการ"}
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:15px;">
+                <div style="background:#fff9c4; padding:10px 5px; border-radius:10px; text-align:center; border: 1px solid #fef08a;">
+                    <div style="font-size:9px; font-weight:700; color:#854d0e; opacity:0.8;">ยอดเบิก</div>
+                    <div style="font-weight:800; font-size:14px; color:#ca8a04;">${totalFee.toLocaleString()}</div>
+                </div>
+                <div style="background:#f0fdf4; padding:10px 5px; border-radius:10px; text-align:center; border: 1px solid #dcfce7;">
+                    <div style="font-size:9px; font-weight:700; color:#166534; opacity:0.8;">ใช้จริง</div>
+                    <div style="font-weight:800; font-size:14px; color:#16a34a;">${totalExpense.toLocaleString()}</div>
+                </div>
+                <div style="background:#f8fafc; padding:10px 5px; border-radius:10px; text-align:center; border: 1px solid #e2e8f0;">
+                    <div style="font-size:9px; font-weight:700; color:#475569; opacity:0.8;">คงเหลือ</div>
+                    <div style="font-weight:800; font-size:14px; color:${balanceColor};">${balance.toLocaleString()}</div>
+                </div>
+            </div>
+
+            ${schoolsHTML}
+
+            <div class="ticket-actions" style="margin-top:15px; display:flex; gap:8px;">
+                ${!isDone ? `<button class="btn-done" onclick="doneTicket(${t.id})" style="flex:1; background:#22c55e; color:#white; font-weight:700; padding:8px; border:none; border-radius:8px; cursor:pointer;">✓ เสร็จสิ้น</button>` : ""}
+                <button class="sec-btn" onclick="openEditModal(${t.id})" style="padding:8px 12px; background:#f1f5f9; border:none; border-radius:8px; cursor:pointer; font-size:12px;">✏️ แก้ไข</button>
+                <button class="btn-del" onclick="deleteTicket(${t.id})" style="padding:8px 12px; background:#fff1f2; color:#e11d48; border:none; border-radius:8px; cursor:pointer; font-size:12px;">ลบ</button>
+            </div>
+        </div>`;
+}
+
 
 async function doneTicket(id) {
     if (!confirm("ยืนยันเสร็จสิ้น? ครูจะถูกเพิ่มเข้าโรงเรียนอัตโนมัติ")) return;
@@ -541,14 +797,63 @@ async function deleteTicket(id) {
 // ── MODAL ────────────────────────────────
 
 function openModal() {
-    teacherRows = [];
-    document.getElementById("tSchool").innerHTML = allSchools.map(s =>
-        `<option value="${s}">${s}</option>`
-    ).join("");
-    ["tCoord","tFee","tExpense","tDate","tAddr"].forEach(id => document.getElementById(id).value = "");
-    document.getElementById("teacherFormList").innerHTML = "";
-    addTeacherRow();
+    editingTicketId = null;
+    document.getElementById("modalTitle").textContent = "เพิ่ม ticket อบรม";
+    
+    // เคลียร์รายการโรงเรียน
+    schoolBlocks = [];
+    document.getElementById("schoolBlockList").innerHTML = "";
+
+    // เคลียร์ค่า input (ใช้รายชื่อ ID ที่มีใน HTML ของคุณ)
+    ["tCoord", "tStartDate", "tEndDate", "tAddr", "tTotalFee","tNote"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = (id === "tTotalFee") ? "" : ""; 
+    });
+
+    // เซ็ตวันที่ปัจจุบันเป็นค่าเริ่มต้น
+    document.getElementById("tStartDate").value = new Date().toISOString().split('T')[0];
+
+    addSchoolBlock(); // เพิ่มบล็อกโรงเรียนแรก
+    
+    // สั่งเปิด Modal
     document.getElementById("ticketModal").classList.add("open");
+}
+
+async function openEditModal(id) {
+    editingTicketId = id;
+    document.getElementById("modalTitle").textContent = "แก้ไข ticket";
+    schoolBlocks = [];
+    document.getElementById("schoolBlockList").innerHTML = "";
+
+    try {
+        // 1. ดึงข้อมูล Ticket หลัก
+        let pendingRes = await fetch("/api/tickets").then(r => r.json());
+        let doneRes = await fetch("/api/tickets/done").then(r => r.json());
+        let t = pendingRes.find(t => t.id === id) || doneRes.find(t => t.id === id);
+        
+        if (!t) return;
+
+        // 2. ดึงข้อมูลโรงเรียน (teachers nested มาด้วยแล้วจาก /api/ticket-schools)
+        let schoolsRes = await fetch("/api/ticket-schools?ticket_id=" + id).then(r => r.json());
+
+        // ใส่ข้อมูลลงในฟอร์ม
+        document.getElementById("tCoord").value = t.coordinator || "";
+        document.getElementById("tStartDate").value = t.start_date || "";
+        document.getElementById("tEndDate").value = t.end_date || "";
+        document.getElementById("tAddr").value = t.addr || "";
+        document.getElementById("tNote").value = t.note || "";
+        document.getElementById("tTotalFee").value = t.fee || 0;
+
+        for (let s of schoolsRes) {
+            addSchoolBlock(s.school, s.expense, s.teachers || []);
+        }
+        
+        if (schoolsRes.length === 0) addSchoolBlock();
+
+        document.getElementById("ticketModal").classList.add("open");
+    } catch (err) {
+        console.error("Error opening edit modal:", err);
+    }
 }
 
 function closeModal() {
@@ -556,57 +861,168 @@ function closeModal() {
 }
 
 function handleBackdrop(e) {
-    if (e.target === document.getElementById("ticketModal")) closeModal();
+    if (e.target.id === "ticketModal") {
+        closeModal();
+    }
 }
 
-function addTeacherRow() {
-    let rowId = Date.now();
-    teacherRows.push(rowId);
+function addSchoolBlock(school = "", expense = 0, teachers = []) {
+    let blockId = Date.now() + Math.random();
+    let block = { blockId, teacherRows: [] };
+    schoolBlocks.push(block);
+
+    let div = document.createElement("div");
+    div.className = "school-block";
+    div.id = "sblock_" + blockId;
+    div.style.border = "1px solid #eee";
+    div.style.padding = "15px";
+    div.style.borderRadius = "8px";
+    div.style.marginBottom = "15px";
+    div.style.background = "#fafafa";
+    
+    div.innerHTML = `
+        <div class="school-block-header" style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
+            <div style="flex:1;">
+                <div style="font-size:11px; color:#666; margin-bottom:4px;">เลือกโรงเรียน</div>
+                <select id="sname_${blockId}" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc;">
+                    <option value="">-- เลือกโรงเรียน --</option>
+                    ${allSchools.map(s => `<option value="${s}" ${s === school ? 'selected' : ''}>${s}</option>`).join("")}
+                </select>
+            </div>
+            <div style="width:160px;">
+                <div style="font-size:11px; color:#666; margin-bottom:4px;">เงินที่ใช้จริง (บาท)</div>
+                <input type="number" id="sexpense_${blockId}" placeholder="0" value="${expense || ""}" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc;">
+            </div>
+            <button class="btn-remove-school" onclick="removeSchoolBlock(${blockId})" style="margin-top:18px; padding:5px 10px; background:#fee2e2; color:#dc2626; border:none; border-radius:4px; cursor:pointer;">✕</button>
+        </div>
+        
+        <div style="font-size:11px; font-weight:bold; color:#444; margin-bottom:8px; display:flex; align-items:center; gap:5px;">
+            <span style="background:#ddd; width:15px; height:1px;"></span> รายชื่อครูที่เข้าอบรม
+        </div>
+        
+        <div id="teacherList_${blockId}" style="margin-left:10px; padding-left:10px; border-left:2px solid #ddd;"></div>
+        
+        <button type="button" class="btn-add-teacher" onclick="addTeacherToBlock(${blockId})" style="margin: 10px 0 5px 10px; font-size:12px; color:#2563eb; background:none; border:none; cursor:pointer; font-weight:bold;">
+            + เพิ่มรายชื่อครู
+        </button>
+    `;
+    
+    document.getElementById("schoolBlockList").appendChild(div);
+    
+    if (teachers && teachers.length > 0) {
+        teachers.forEach(t => addTeacherToBlock(blockId, t.name, t.level, t.course));
+    } else {
+        addTeacherToBlock(blockId);
+    }
+}
+
+function removeSchoolBlock(blockId) {
+    let el = document.getElementById("sblock_" + blockId);
+    if (el) el.remove();
+    schoolBlocks = schoolBlocks.filter(b => b.blockId !== blockId);
+}
+
+function addTeacherToBlock(blockId, name="", level="", course="") {
+    let block = schoolBlocks.find(b => b.blockId === blockId);
+    if (!block) return;
+    
+    let rowId = Date.now() + Math.random();
+    block.teacherRows.push(rowId);
+
     let div = document.createElement("div");
     div.className = "teacher-form-row";
     div.id = "trow_" + rowId;
     div.innerHTML = `
-        <input type="text" placeholder="ชื่อ-นามสกุล" id="tname_${rowId}">
-        <input type="text" placeholder="ระดับ" id="tlevel_${rowId}">
-        <input type="text" placeholder="หลักสูตร" id="tcourse_${rowId}">
-        <button class="btn-remove" onclick="removeTeacherRow(${rowId})">✕</button>
+        <div class="avatar" id="avatar_${rowId}" style="width:28px;height:28px;font-size:10px;">??</div>
+        <input type="text" id="tname_${rowId}" placeholder="ชื่อ-นามสกุล" value="${name}" 
+               oninput="updateAvatar('${rowId}', this.value)">
+        <input type="text" id="tlevel_${rowId}" placeholder="ระดับ" value="${level}">
+        <input type="text" id="tcourse_${rowId}" placeholder="หลักสูตร" value="${course}">
+        <button class="btn-remove" onclick="removeTeacherFromBlock(${blockId}, ${rowId})">✕</button>
     `;
-    document.getElementById("teacherFormList").appendChild(div);
+    document.getElementById("teacherList_" + blockId).appendChild(div);
 }
 
-function removeTeacherRow(rowId) {
-    let el = document.getElementById("trow_" + rowId);
+function removeTeacherFromBlock(blockId, rowId) {
+    const el = document.getElementById("trow_" + rowId);
     if (el) el.remove();
-    teacherRows = teacherRows.filter(r => r !== rowId);
+
+    let block = schoolBlocks.find(b => b.blockId === blockId);
+    if (block) {
+        block.teacherRows = block.teacherRows.filter(id => id !== rowId);
+    }
 }
 
 async function submitTicket() {
-    let school = document.getElementById("tSchool").value;
-    let coordinator = document.getElementById("tCoord").value.trim();
-    let fee = parseFloat(document.getElementById("tFee").value) || null;
-    let expense = parseFloat(document.getElementById("tExpense").value) || null;
-    let date = document.getElementById("tDate").value;
-    let addr = document.getElementById("tAddr").value.trim();
+    const schools = schoolBlocks.map(block => {
+        const schoolName = document.getElementById(`sname_${block.blockId}`)?.value || "";
+        const expense = parseFloat(document.getElementById(`sexpense_${block.blockId}`)?.value) || null;
+        
+       // ใน submitTicket() ส่วนที่วนลูปครู
+    const teachers = block.teacherRows.map(rId => {
+    // ดึง id เดิมที่ซ่อนไว้ใน Input (ถ้ามี)
+    const teacherId = document.getElementById(`tid_${rId}`)?.value || null; 
+    return {
+        id: teacherId ? parseInt(teacherId) : null, // ส่ง ID เดิมไปเพื่อให้ Rust รู้ว่าคนเดิม
+        ticket_id: editingTicketId || null,
+        school: schoolName,
+        name: document.getElementById(`tname_${rId}`)?.value.trim() || "",
+        level: document.getElementById(`tlevel_${rId}`)?.value.trim() || "",
+        course: document.getElementById(`tcourse_${rId}`)?.value.trim() || "",
+    };
+}).filter(t => t.name !== "");
 
-    let teachers = teacherRows.map(rowId => ({
-        id: null, ticket_id: null,
-        name: document.getElementById("tname_" + rowId)?.value.trim() || "",
-        level: document.getElementById("tlevel_" + rowId)?.value.trim() || "",
-        course: document.getElementById("tcourse_" + rowId)?.value.trim() || "",
-    })).filter(t => t.name !== "");
+        return { 
+            id: null, 
+            ticket_id: editingTicketId || null, 
+            school: schoolName, 
+            expense, 
+            teachers 
+        };
+    }).filter(s => s.school !== "");
 
-    if (!school) { showToast("กรุณาเลือกโรงเรียน"); return; }
-    if (teachers.length === 0) { showToast("กรุณาเพิ่มครูอย่างน้อย 1 คน"); return; }
+    if (schools.length === 0) { 
+        showToast("กรุณาเพิ่มโรงเรียนอย่างน้อย 1 โรงเรียน"); 
+        return; 
+    }
 
-    await fetch("/api/tickets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: null, school, coordinator, fee, expense, date, addr, done: null, teachers })
-    });
+    const ticketData = {
+        id: editingTicketId || null,
+        ticket_no: document.getElementById("tNo")?.value.trim() || "", // ดึงเลข SMBQ-1 มาใส่ตรงนี้
+        coordinator: document.getElementById("tCoord").value.trim(),
+        // จุดที่แก้: เปลี่ยนจาก date เป็น start_date และ end_date ให้ตรงกับ HTML/Rust
+        start_date: document.getElementById("tStartDate").value, 
+        end_date: document.getElementById("tEndDate").value,
+        addr: document.getElementById("tAddr").value.trim(),
+        note: document.getElementById("tNote").value.trim(),
+        fee: parseFloat(document.getElementById("tTotalFee").value) || null,
+        done: null,
+        schools
+    };
 
-    closeModal();
-    showToast("เพิ่ม ticket เรียบร้อย");
-    loadTickets();
+    // ถ้ามี editingTicketId ให้ใช้ PUT เพื่อส่งไปแก้ไข แทน POST
+    const url = editingTicketId ? `/api/tickets/${editingTicketId}` : "/api/tickets";
+    const method = editingTicketId ? "PUT" : "POST";
+
+    try {
+        const res = await fetch(url, {
+            method: method, // ใช้ method ที่เราแยกไว้
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(ticketData)
+        });
+
+        if (res.ok) {
+            showToast(editingTicketId ? "แก้ไข ticket เรียบร้อย" : "เพิ่ม ticket เรียบร้อย");
+            closeModal();
+            loadTickets();
+        } else {
+            const err = await res.text();
+            alert("เกิดข้อผิดพลาด: " + err);
+        }
+    } catch (e) { 
+        console.error(e); 
+        alert("ไม่สามารถติดต่อเซิร์ฟเวอร์ได้");
+    }
 }
 
 // ── UTILS ────────────────────────────────
@@ -670,11 +1086,9 @@ function showSearchResults(data) {
         let match = item.path.match(/School_([^/]+)/);
         if (match) schoolMatches.add(match[1]);
     });
-
     if (schoolMatches.size > 0) {
         list.innerHTML = [...schoolMatches].map(s => `
-            <div class="school-item" onclick="selectSchool(this, '${s}')">🏫 ${s}</div>
-        `).join("");
+            <div class="school-item" onclick="selectSchool(this, '${s}')">🏫 ${s}</div>`).join("");
     } else {
         list.innerHTML = data.length === 0
             ? '<div class="empty">ไม่พบไฟล์</div>'
@@ -685,107 +1099,213 @@ function showSearchResults(data) {
     }
 }
 
-function renderSchool(name, teachers, files, schoolTickets = []) {
-    let images = files.images || [];
-    let documents = files.documents || [];
-    window._currentImages = images;
-    window._currentDocs = documents;
+function updateAvatar(rowId, name) {
+    const avatarEl = document.getElementById("avatar_" + rowId);
+    if (avatarEl) {
+        avatarEl.textContent = getInitials(name); // เรียกใช้ Utility เก่าของคุณ
+    }
+}
 
-    let teacherHTML = teachers.length === 0
-        ? '<div class="empty">ยังไม่มีข้อมูลครู</div>'
-        : teachers.map(t => `
-            <div class="teacher-row">
-                <div class="avatar">${getInitials(t.name)}</div>
-                <div class="t-name">${t.name}</div>
-                ${t.level ? `<div class="badge">${t.level}</div>` : ""}
-                ${t.course ? `<div class="course-badge">${t.course}</div>` : ""}
-            </div>
-        `).join("");
 
-    let imgPreview = images.slice(0, 5).map(img => {
-        let url = "/files/" + img.path.split("/").map(encodeURIComponent).join("/");
-        return `<div class="img-thumb" onclick="showImage('${img.path}')">
-            <img src="${url}" onerror="this.parentElement.innerHTML='🖼️'">
-        </div>`;
-    }).join("");
-    let imgHTML = images.length === 0 ? '<div class="empty">ไม่มีรูปภาพ</div>' : `<div class="img-grid">${imgPreview}</div>`;
-    let showMoreImg = images.length > 5 ? `<button class="sec-btn" onclick="showAllImages()">ดูทั้งหมด (${images.length}) →</button>` : "";
+async function showTeacherHistory(name, school) {
+    document.getElementById("historyTitle").textContent = name + " · ประวัติอบรม";
+    document.getElementById("historyContent").innerHTML = '<div class="empty">กำลังโหลด...</div>';
+    document.getElementById("historyModal").classList.add("open");
 
-    let docHTML = documents.length === 0
-        ? '<div class="empty">ไม่มีเอกสาร</div>'
-        : documents.slice(0, 5).map(d => `
-            <div class="doc-row" onclick="openFile('${d.path}')">
-                <span class="doc-icon">${getIcon(d.name)}</span>
-                <div class="doc-name">${d.name}</div>
-                <span class="doc-open">เปิด ↗</span>
-            </div>
-        `).join("");
-    let showMoreDoc = documents.length > 5 ? `<button class="sec-btn" onclick="showAllDocs()">ดูทั้งหมด (${documents.length}) →</button>` : "";
+    let res = await fetch(`/api/teacher-history?name=${encodeURIComponent(name)}&school=${encodeURIComponent(school)}`);
+    let data = await res.json();
+    let history = data.history || [];
 
-    let ticketSection = schoolTickets.length === 0 ? "" : `
-        <div class="section">
-            <div class="sec-header">
-                <div class="sec-title">🎫 ticket กำลังดำเนินการ (${schoolTickets.length})</div>
-            </div>
-            ${schoolTickets.map(t => `
-                <div style="display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid #f0f0f0; flex-wrap:wrap;">
-                    <div style="flex:1; min-width:140px;">
-                        <div style="font-size:13px; font-weight:bold; color:#111;">
-                            ${t.coordinator ? `👤 ${t.coordinator}` : "ไม่ระบุผู้ประสานงาน"}
-                        </div>
-                        <div style="font-size:11px; color:#888; margin-top:3px;">
-                            ${t.date ? `📅 ${t.date}` : ""}
-                            ${t.addr ? ` · 📍 ${t.addr}` : ""}
-                        </div>
-                    </div>
-                    <div style="display:flex; gap:8px; flex-shrink:0;">
-                        ${t.fee ? `<div style="background:#fef9c3; border-radius:8px; padding:8px 14px; text-align:center;">
-                            <div style="font-size:10px; color:#a16207;">ค่าอบรม</div>
-                            <div style="font-size:15px; font-weight:bold; color:#ca8a04;">${Number(t.fee).toLocaleString()} ฿</div>
-                        </div>` : ""}
-                        ${t.expense ? `<div style="background:#f0fdf4; border-radius:8px; padding:8px 14px; text-align:center;">
-                            <div style="font-size:10px; color:#15803d;">ค่าใช้จ่าย</div>
-                            <div style="font-size:15px; font-weight:bold; color:#16a34a;">${Number(t.expense).toLocaleString()} ฿</div>
-                        </div>` : ""}
-                        <div style="background:#f5f5f5; border-radius:8px; padding:8px 14px; text-align:center;">
-                            <div style="font-size:10px; color:#888;">รวม</div>
-                            <div style="font-size:15px; font-weight:bold; color:#111;">${Number((t.fee||0)+(t.expense||0)).toLocaleString()} ฿</div>
-                        </div>
-                    </div>
+    if (history.length === 0) {
+        document.getElementById("historyContent").innerHTML = '<div class="empty">ยังไม่มีประวัติการอบรม</div>';
+        return;
+    }
+
+    document.getElementById("historyContent").innerHTML = `
+        <div style="font-size:11px; color:#94a3b8; margin-bottom:12px; font-weight:600;">🏫 ${school}</div>
+        ${history.map(h => `
+            <div style="border:1px solid #f1f5f9; border-radius:12px; padding:10px 14px; margin-bottom:10px; background:#fff; word-break: break-word;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; gap:8px;">
+                    <span style="font-size:12px; font-weight:800; color:#2563eb; cursor:pointer; text-decoration:underline; white-space:nowrap;"
+                          onclick="closeHistoryModal(); goToTicket(${h.id})">
+                        ${h.ticket_no}
+                    </span>
+                    <span style="font-size:10px; color:#94a3b8; flex-shrink:0;">${h.start_date || ""}</span>
                 </div>
-            `).join("")}
-        </div>`;
+
+                <div style="font-size:13px; font-weight:700; color:#1e293b; line-height:1.4;">📚 ${h.course}</div>
+                
+                <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:6px; border-top:1px dashed #f1f5f9; padding-top:6px;">
+                    ${h.level ? `<div style="font-size:11px; color:#64748b;">🎯 ${h.level}</div>` : ""}
+                    ${h.coordinator ? `<div style="font-size:11px; color:#94a3b8;">👤 ${h.coordinator}</div>` : ""}
+                </div>
+            </div>`).join("")}`;
+}
+
+function goToTicket(ticketId) {
+    // ไปหน้า ticket แล้ว highlight ticket นั้น
+    let navEl = document.getElementById("ticketNavItem");
+    showTicketPage(navEl);
+    // รอ render เสร็จแล้ว scroll ไปที่ ticket
+    setTimeout(() => {
+        let el = document.getElementById("ticket_" + ticketId);
+        if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+            el.style.outline = "2px solid #2563eb";
+            setTimeout(() => el.style.outline = "", 2000);
+        }
+    }, 800);
+}
+
+function closeHistoryModal() {
+    document.getElementById("historyModal").classList.remove("open");
+}
+
+async function exportSchoolExcel(name) {
+    showToast("กำลัง export...");
+
+    // ดึงข้อมูลพร้อมกัน
+    let [teachers, schoolTickets] = await Promise.all([
+        fetch(`/api/teachers?school=${encodeURIComponent(name)}`).then(r => r.json()),
+        fetch(`/api/school-tickets?school=${encodeURIComponent(name)}`).then(r => r.json()),
+    ]);
+
+    // ดึง schools data ของแต่ละ ticket เพื่อเอา expense
+    let ticketSchoolsData = await Promise.all(
+        schoolTickets.map(t => fetch("/api/ticket-schools?ticket_id=" + t.id).then(r => r.json()))
+    );
+
+    const wb = XLSX.utils.book_new();
+
+    // ── Sheet 1: สรุปยอดเงิน ──────────────────
+    let moneyRows = [["Ticket ID", "ผู้ประสานงาน", "วันที่", "สถานที่", "ยอดเบิก (฿)", "ยอดใช้จริง (฿)", "คงเหลือ (฿)"]];
+
+    schoolTickets.forEach((t, i) => {
+        let schools = ticketSchoolsData[i] || [];
+        let schoolExpense = schools.find(s => s.school === name);
+        let totalExpense = schools.reduce((sum, s) => sum + (s.expense || 0), 0);
+        let expense = schoolExpense ? (schoolExpense.expense || 0) : 0;
+        let balance = (t.fee || 0) - totalExpense;
+        moneyRows.push([
+            t.ticket_no || "",
+            t.coordinator || "",
+            t.start_date || "",
+            t.addr || "",
+            t.fee || 0,
+            expense,
+            balance,
+        ]);
+    });
+
+    // แถวสรุป
+    let totalFee = schoolTickets.reduce((s, t) => s + (t.fee || 0), 0);
+    let totalExp = moneyRows.slice(1).reduce((s, r) => s + (r[5] || 0), 0);
+    moneyRows.push(["", "", "", "รวม", totalFee, totalExp, totalFee - totalExp]);
+
+    const ws1 = XLSX.utils.aoa_to_sheet(moneyRows);
+    ws1["!cols"] = [14, 18, 12, 20, 14, 14, 14].map(w => ({ wch: w }));
+    XLSX.utils.book_append_sheet(wb, ws1, "สรุปยอดเงิน");
+
+    // ── Sheet 2: รายชื่อครู ──────────────────
+    let teacherRows = [["ชื่อ-นามสกุล", "ระดับ", "หลักสูตรล่าสุด", "Ticket ล่าสุด"]];
+
+    // ดึงประวัติครูแต่ละคน
+    let historyData = await Promise.all(
+        teachers.map(t =>
+            fetch(`/api/teacher-history?name=${encodeURIComponent(t.name)}&school=${encodeURIComponent(name)}`)
+                .then(r => r.json())
+        )
+    );
+
+    teachers.forEach((t, i) => {
+        let history = historyData[i]?.history || [];
+        let latestTicket = history.length > 0 ? history[0].ticket_no : (t.ticket_id ? "" : "-");
+        let allCourses = history.map(h => `${h.ticket_no}: ${h.course}`).join(" | ");
+        teacherRows.push([
+            t.name,
+            t.level || "",
+            t.course || "",
+            latestTicket,
+        ]);
+    });
+
+    const ws2 = XLSX.utils.aoa_to_sheet(teacherRows);
+    ws2["!cols"] = [22, 16, 24, 14].map(w => ({ wch: w }));
+    XLSX.utils.book_append_sheet(wb, ws2, "รายชื่อครู");
+
+    // download
+    XLSX.writeFile(wb, `โรงเรียน${name}_${new Date().toLocaleDateString('th-TH').replace(/\//g,'-')}.xlsx`);
+    showToast("✅ Export สำเร็จ");
+}
+
+// ── DARK MODE ──────────────────────────
+function toggleDark() {
+    document.body.classList.toggle("dark");
+    let isDark = document.body.classList.contains("dark");
+    document.getElementById("darkBtn").textContent = isDark ? "☀️" : "🌙";
+    localStorage.setItem("darkMode", isDark);
+}
+
+// โหลด dark mode preference
+if (localStorage.getItem("darkMode") === "true") {
+    document.body.classList.add("dark");
+    document.getElementById("darkBtn").textContent = "☀️";
+}
+
+// ── TEACHER SEARCH ──────────────────────
+function showTeacherSearch(el) {
+    document.querySelectorAll(".school-item").forEach(i => i.classList.remove("active"));
+    el.classList.add("active");
+    currentSchool = null;
 
     document.getElementById("main").innerHTML = `
-        <div class="school-header">
-            <h2>🏫 โรงเรียน${name}</h2>
-            <p>ปีการศึกษา 2026</p>
+        <div style="margin-bottom:1.25rem;">
+            <div style="font-size:20px; font-weight:bold; color:#111; margin-bottom:4px;">🔍 ค้นหาครู</div>
+            <div style="font-size:12px; color:#888;">ค้นหาชื่อครูข้ามทุกโรงเรียน</div>
         </div>
-        <div class="stats">
-            <div class="stat"><div class="stat-label">ครู</div><div class="stat-value">${teachers.length}</div></div>
-            <div class="stat"><div class="stat-label">รูปภาพ</div><div class="stat-value">${images.length}</div></div>
-            <div class="stat"><div class="stat-label">เอกสาร</div><div class="stat-value">${documents.length}</div></div>
-        </div>
-        ${ticketSection}
-        <div class="section">
-            <div class="sec-header"><div class="sec-title">รายชื่อครู</div></div>
-            ${teacherHTML}
-        </div>
-        <div class="section">
-            <div class="sec-header">
-                <div class="sec-title">รูปภาพ</div>
-                ${showMoreImg}
-            </div>
-            ${imgHTML}
-        </div>
-        <div class="section">
-            <div class="sec-header">
-                <div class="sec-title">เอกสาร / ไฟล์</div>
-                ${showMoreDoc}
-            </div>
-            ${docHTML}
-        </div>
+        <input id="teacherSearchInput" placeholder="พิมชื่อครู..." 
+               style="width:100%; padding:10px 14px; border:1px solid #ddd; border-radius:8px; font-size:14px; margin-bottom:1rem;"
+               oninput="searchTeacher(this.value)">
+        <div id="teacherSearchResults"><div class="empty" style="text-align:center;padding:2rem;">พิมชื่อครูเพื่อค้นหา</div></div>
     `;
+
+    setTimeout(() => document.getElementById("teacherSearchInput")?.focus(), 100);
+}
+
+let teacherSearchTimeout;
+function searchTeacher(q) {
+    clearTimeout(teacherSearchTimeout);
+    if (q.length === 0) {
+        document.getElementById("teacherSearchResults").innerHTML = 
+            '<div class="empty" style="text-align:center;padding:2rem;">พิมชื่อครูเพื่อค้นหา</div>';
+        return;
+    }
+    teacherSearchTimeout = setTimeout(async () => {
+        let data = await fetch(`/api/search-teacher?q=${encodeURIComponent(q)}`).then(r => r.json());
+        let el = document.getElementById("teacherSearchResults");
+        if (!el) return;
+
+        if (data.length === 0) {
+            el.innerHTML = '<div class="empty" style="text-align:center;padding:2rem;">ไม่พบครูที่ค้นหา</div>';
+            return;
+        }
+
+        el.innerHTML = `
+            <div style="font-size:12px; color:#888; margin-bottom:8px;">พบ ${data.length} รายการ</div>
+            ${data.map(t => `
+                <div class="section" style="display:flex; align-items:center; gap:12px; padding:10px 14px; cursor:pointer; margin-bottom:8px;"
+                     onclick="showTeacherHistory('${t.name.replace(/'/g,"\\'")}', '${(t.school||'').replace(/'/g,"\\'")}')">
+                    <div class="avatar">${getInitials(t.name)}</div>
+                    <div style="flex:1;">
+                        <div style="font-size:14px; font-weight:bold; color:#111;">${t.name}</div>
+                        <div style="font-size:12px; color:#888; margin-top:2px;">🏫 ${t.school || "-"}</div>
+                    </div>
+                    ${t.level ? `<div class="badge">${t.level}</div>` : ""}
+                    ${t.course ? `<div class="course-badge" style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${t.course}</div>` : ""}
+                    <span style="font-size:11px; color:#aaa;">📋 ประวัติ</span>
+                </div>
+            `).join("")}`;
+    }, 300);
 }
 
 loadSchools();
