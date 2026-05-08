@@ -22,6 +22,17 @@ struct SchoolFiles {
 }
 
 #[derive(serde::Serialize)]
+struct Summary {
+    school_count: i64,
+    teacher_count: i64,
+    ticket_total: i64,
+    ticket_pending: i64,
+    ticket_done: i64,
+    total_fee: f64,
+    total_expense: f64,
+}
+
+#[derive(serde::Serialize)]
 struct FileItem {
     name: String,
     is_dir: bool,
@@ -67,6 +78,7 @@ struct TicketSchool {
     id: Option<i64>,
     ticket_id: Option<i64>,
     school: String,
+    coordinator: String,
     expense: Option<f64>,
     teachers: Vec<TicketTeacher>,
 }
@@ -93,12 +105,71 @@ async fn main() {
         .route("/api/school-tickets", get(get_school_tickets))
         .route("/api/teacher-history", get(get_teacher_history))
         .route("/api/search-teacher", get(search_teacher))
+        .route("/api/summary", get(get_summary))
         .nest_service("/files", ServeDir::new(DATA_PATH))
-        .nest_service("/", ServeDir::new("static"));
+        .nest_service("/", ServeDir::new("static").fallback(get(|| async {
+        axum::response::Html(fs::read_to_string("static/app.html").unwrap())
+        })));
 
     println!("Server running: http://localhost:3000");
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
+}
+
+async fn get_summary() -> Json<Summary> {
+    tokio::task::spawn_blocking(|| {
+        let conn = Connection::open("files.db").unwrap();
+
+       let base = std::path::Path::new(DATA_PATH).join("2026");
+       let school_count = std::fs::read_dir(&base)
+       .map(|entries| {
+        entries.flatten()
+            .filter(|e| {
+                e.file_type().map(|f| f.is_dir()).unwrap_or(false)
+                && e.file_name().to_string_lossy().starts_with("School_")
+            })
+            .count() as i64
+      })
+       .unwrap_or(0);
+
+        let teacher_count: i64 = conn.query_row(
+            "SELECT COUNT(DISTINCT name || '|' || school) FROM teachers", [], |r| r.get(0)
+        ).unwrap_or(0);
+
+        let ticket_total: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM tickets", [], |r| r.get(0)
+        ).unwrap_or(0);
+
+        let ticket_pending: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM tickets WHERE done = 0", [], |r| r.get(0)
+        ).unwrap_or(0);
+
+        let ticket_done: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM tickets WHERE done = 1", [], |r| r.get(0)
+        ).unwrap_or(0);
+
+        let total_fee: f64 = conn.query_row(
+            "SELECT COALESCE(SUM(fee), 0) FROM tickets", [], |r| r.get(0)
+        ).unwrap_or(0.0);
+
+        let total_expense: f64 = conn.query_row(
+            "SELECT COALESCE(SUM(expense), 0) FROM ticket_schools", [], |r| r.get(0)
+        ).unwrap_or(0.0);
+
+        Summary {
+            school_count,
+            teacher_count,
+            ticket_total,
+            ticket_pending,
+            ticket_done,
+            total_fee,
+            total_expense,
+        }
+    }).await.unwrap_or(Summary {
+        school_count: 0, teacher_count: 0,
+        ticket_total: 0, ticket_pending: 0, ticket_done: 0,
+        total_fee: 0.0, total_expense: 0.0,
+    }).into()
 }
 
 async fn get_done_tickets() -> Json<Vec<Ticket>> {
@@ -154,8 +225,8 @@ async fn update_ticket(
         // insert ใหม่
         for s in &body.schools {
             tx.execute(
-                "INSERT INTO ticket_schools (ticket_id, school, expense) VALUES (?1, ?2, ?3)",
-                params![id, s.school, s.expense],
+                "INSERT INTO ticket_schools (ticket_id, school, coordinator, expense) VALUES (?1, ?2, ?3, ?4)",
+                params![id, s.school, s.coordinator, s.expense],
             ).unwrap();
             for t in &s.teachers {
                 tx.execute(
@@ -208,7 +279,7 @@ async fn get_ticket_schools(
         let conn = Connection::open("files.db").unwrap();
         let mut stmt = conn
             .prepare(
-                "SELECT id, ticket_id, school, expense FROM ticket_schools WHERE ticket_id = ?1",
+                "SELECT id, ticket_id, school, coordinator, expense FROM ticket_schools WHERE ticket_id = ?1",
             )
             .unwrap();
         let schools_iter = stmt
@@ -217,7 +288,8 @@ async fn get_ticket_schools(
                     id: row.get(0)?,
                     ticket_id: row.get(1)?,
                     school: row.get(2)?,
-                    expense: row.get(3)?,
+                    coordinator: row.get(3)?,
+                    expense: row.get(4)?,
                     teachers: vec![],
                 })
             })
@@ -261,25 +333,44 @@ async fn get_school_tickets(Query(params): Query<HashMap<String,String>>) -> Jso
     let school = params.get("school").cloned().unwrap_or_default();
     tokio::task::spawn_blocking(move || {
         let conn = Connection::open("files.db").unwrap();
+        // 1. เปลี่ยนจาก JOIN เป็น LEFT JOIN
+        // 2. ใช้ IFNULL เพื่อป้องกัน Error กรณีข้อมูลใน ticket_schools ยังไม่มี
         let mut stmt = conn.prepare(
-            "SELECT DISTINCT t.id, t.ticket_no, t.coordinator, t.fee, t.start_date, t.end_date, t.addr, t.note, t.done
+            "SELECT t.id, t.ticket_no, t.coordinator, t.fee, t.start_date, t.end_date, t.addr, t.note, t.done, 
+                    IFNULL(ts.coordinator, ''), IFNULL(ts.expense, 0.0)
              FROM tickets t
-             JOIN ticket_schools ts ON ts.ticket_id = t.id
+             LEFT JOIN ticket_schools ts ON ts.ticket_id = t.id
              WHERE ts.school = ?1
-             ORDER BY t.done ASC, t.id DESC"  // pending ก่อน done
+             ORDER BY t.done ASC, t.id DESC"
         ).unwrap();
-        let rows = stmt.query_map([&school], |row| Ok(Ticket {
-            id:          row.get(0)?,
-            ticket_no:   row.get(1)?,
-            coordinator: row.get(2)?,
-            fee:         row.get(3)?,
-            start_date:  row.get(4)?,
-            end_date:    row.get(5)?,
-            addr:        row.get(6)?,
-            note:        row.get(7)?,
-            done:        row.get(8)?,
-            schools:     vec![],
-        })).unwrap();
+
+        let rows = stmt.query_map([&school], |row| {
+            let t_id: i64 = row.get(0)?;
+            
+            // ใช้ความพยายามดึงข้อมูล ถ้าไม่มีให้เป็นค่าว่าง
+            let school_coord: String = row.get(9).unwrap_or_default();
+            let school_exp: f64 = row.get(10).unwrap_or(0.0);
+
+            Ok(Ticket {
+                id:          Some(t_id),
+                ticket_no:   row.get(1).unwrap_or_default(),
+                coordinator: row.get(2).unwrap_or_default(),
+                fee:         Some(row.get(3).unwrap_or(0.0)),
+                start_date:  row.get(4).unwrap_or_default(),
+                end_date:    row.get(5).unwrap_or_default(),
+                addr:        row.get(6).unwrap_or_default(),
+                note:        row.get(7).unwrap_or_default(),
+                done:        Some(row.get(8).unwrap_or(0)),
+                schools:     vec![TicketSchool {
+                    id: None,
+                    ticket_id: Some(t_id),
+                    school: school.clone(),
+                    coordinator: school_coord,
+                    expense: Some(school_exp),
+                    teachers: vec![],
+                }],
+            })
+        }).unwrap();
         rows.filter_map(|r| r.ok()).collect::<Vec<_>>()
     }).await.unwrap_or_default().into()
 }
@@ -287,6 +378,7 @@ async fn get_school_tickets(Query(params): Query<HashMap<String,String>>) -> Jso
 async fn delete_ticket(AxumPath(id): AxumPath<i64>) -> impl IntoResponse {
     tokio::task::spawn_blocking(move || {
         let conn = Connection::open("files.db").unwrap();
+        conn.execute("DELETE FROM teachers WHERE ticket_id = ?1", [id]).unwrap();
         conn.execute("DELETE FROM ticket_schools WHERE ticket_id = ?1", [id]).unwrap();
         conn.execute("DELETE FROM ticket_teachers WHERE ticket_id = ?1", [id]).unwrap();
         conn.execute("DELETE FROM tickets WHERE id = ?1", [id]).unwrap();
@@ -385,17 +477,21 @@ fn init_db() {
     let _ = conn.execute("ALTER TABLE tickets ADD COLUMN note TEXT", []);
 
     // 4. ตารางความสัมพันธ์ Ticket - โรงเรียน (เก็บค่าใช้จ่ายแยกรายที่)
-    conn.execute("CREATE TABLE IF NOT EXISTS ticket_schools (id INTEGER PRIMARY KEY, ticket_id INTEGER, school TEXT, expense REAL, FOREIGN KEY(ticket_id) REFERENCES tickets(id))", []).unwrap();
+    conn.execute("CREATE TABLE IF NOT EXISTS ticket_schools (
+    id INTEGER PRIMARY KEY,
+    ticket_id INTEGER,
+    school TEXT,
+    coordinator TEXT DEFAULT '',
+    expense REAL,
+    FOREIGN KEY(ticket_id) REFERENCES tickets(id)
+    )", []).unwrap();
+    // migration สำหรับ DB เก่าที่มีอยู่แล้ว
+    let _ = conn.execute("ALTER TABLE ticket_schools ADD COLUMN coordinator TEXT DEFAULT ''", []);
     conn.execute("CREATE INDEX IF NOT EXISTS idx_ticket_schools_school ON ticket_schools (school)", []).unwrap();
 
     // 5. ตารางรายชื่อครูที่มากับ Ticket นั้นๆ
     conn.execute("CREATE TABLE IF NOT EXISTS ticket_teachers (id INTEGER PRIMARY KEY, ticket_id INTEGER, school TEXT, name TEXT, level TEXT, course TEXT, FOREIGN KEY(ticket_id) REFERENCES tickets(id))", []).unwrap();
     // เพิ่มบรรทัดนี้เพื่อลบรายชื่อครูที่ "ไม่มีประวัติผูกอยู่" (กำจัดชื่อเก่าที่แก้ไขไปแล้ว)
-    let _ = conn.execute(
-        "DELETE FROM teachers WHERE name NOT IN (SELECT name FROM ticket_teachers)", 
-        []
-    );
-    println!("🧹 ระบบล้างรายชื่อขยะที่ไม่มี Ticket เรียบร้อยแล้ว");
 }
 
 fn index_files() {
@@ -455,44 +551,40 @@ fn index_files() {
 
 async fn get_teachers(Query(params): Query<HashMap<String, String>>) -> Json<Vec<Teacher>> {
     let school = params.get("school").cloned().unwrap_or_default();
-    
-    // ใช้ spawn_blocking สำหรับการทำงานกับ SQLite (Synchronous)
     let result = tokio::task::spawn_blocking(move || {
         let conn = Connection::open("files.db").unwrap();
-        
-        
-      let mut stmt = conn.prepare(
-    "SELECT name, school, MAX(level), MAX(course), MAX(ticket_id) FROM (
-        SELECT tt.name, tt.school, tt.level, tt.course, tt.ticket_id 
-        FROM ticket_teachers tt
-        JOIN tickets t ON tt.ticket_id = t.id
-        WHERE tt.school = ?1
-        
-        UNION ALL
-        
-        SELECT tr.name, tr.school, tr.level, tr.course, tr.ticket_id 
-        FROM teachers tr
-        JOIN tickets t ON tr.ticket_id = t.id
-        WHERE tr.school = ?1
-     ) 
-     GROUP BY name 
-     ORDER BY name ASC",
-).unwrap();
-        
+        let mut stmt = conn.prepare(
+            "SELECT name, school, MAX(level), MAX(course), MAX(ticket_id)
+             FROM (
+                 SELECT tt.name, tt.school, tt.level, tt.course, tt.ticket_id
+                 FROM ticket_teachers tt
+                 JOIN tickets t ON tt.ticket_id = t.id
+                 WHERE tt.school = ?1
+
+                 UNION
+
+                 SELECT tr.name, tr.school, tr.level, tr.course, tr.ticket_id
+                 FROM teachers tr
+                 JOIN tickets t ON tr.ticket_id = t.id
+                 WHERE tr.school = ?1
+             )
+             GROUP BY name
+             ORDER BY name ASC"
+        ).unwrap();
+
         let rows = stmt.query_map([&school], |row| {
             Ok(Teacher {
-                id: None,
-                name: row.get(0)?,
-                school: Some(row.get(1)?),
-                level: row.get(2)?,
-                course: row.get(3)?,
+                id:        None,
+                name:      row.get(0)?,
+                school:    Some(row.get(1)?),
+                level:     row.get(2)?,
+                course:    row.get(3)?,
                 ticket_id: row.get(4)?,
             })
         }).unwrap();
-        
+
         rows.filter_map(|r| r.ok()).collect::<Vec<Teacher>>()
-    })
-    .await;
+    }).await;
 
     match result {
         Ok(teachers) => Json(teachers),
@@ -539,10 +631,10 @@ async fn add_ticket(Json(body): Json<Ticket>) -> impl IntoResponse {
         let mut conn = Connection::open("files.db").unwrap();
         let tx = conn.transaction().unwrap();
 
-        let count: i64 = tx
-            .query_row("SELECT COUNT(*) FROM tickets", [], |r| r.get(0))
-            .unwrap_or(0);
-        let ticket_no = format!("SMB-Q{:04}", count + 1);
+        let last_id: i64 = tx
+        .query_row("SELECT MAX(id) FROM tickets", [], |r| r.get(0))
+        .unwrap_or(0); // ถ้าไม่มีข้อมูลเลยจะได้ 0
+        let ticket_no = format!("SMB-Q{:04}", last_id + 1);
 
         tx.execute(
             "INSERT INTO tickets (ticket_no, coordinator, start_date, end_date, addr, note, fee) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
@@ -553,8 +645,8 @@ async fn add_ticket(Json(body): Json<Ticket>) -> impl IntoResponse {
 
         for s in &body.schools {
             tx.execute(
-                "INSERT INTO ticket_schools (ticket_id, school, expense) VALUES (?1, ?2, ?3)",
-                params![ticket_id, s.school, s.expense],
+                "INSERT INTO ticket_schools (ticket_id, school, coordinator, expense) VALUES (?1, ?2, ?3, ?4)",
+                params![ticket_id, s.school, s.coordinator, s.expense],
             ).unwrap();
             for t in &s.teachers {
                 tx.execute(
@@ -573,22 +665,33 @@ async fn add_ticket(Json(body): Json<Ticket>) -> impl IntoResponse {
 
 async fn ticket_done(AxumPath(id): AxumPath<i64>) -> impl IntoResponse {
     tokio::task::spawn_blocking(move || {
-        let conn = Connection::open("files.db").unwrap();
-        let mut stmt = conn
+        let mut conn = Connection::open("files.db").unwrap();
+        let tx = conn.transaction().unwrap();
+
+        // 1. แก้ SQL: เอา coordinator ออกจาก SELECT (เพราะตาราง ticket_teachers ไม่มีคอลัมน์นี้)
+        let mut stmt = tx
             .prepare("SELECT school, name, level, course FROM ticket_teachers WHERE ticket_id = ?1")
             .unwrap();
+            
         let list: Vec<(String, String, String, String)> = stmt
             .query_map([id], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)))
             .unwrap()
             .filter_map(|r| r.ok())
             .collect();
+        drop(stmt); 
+
+        // 2. แก้ตอน INSERT: เอา coordinator ออก (เพราะตาราง teachers เก็บแค่ข้อมูลครู)
         for (school, name, level, course) in list {
-            conn.execute(
+            tx.execute(
                 "INSERT INTO teachers (school, name, level, course, ticket_id) VALUES (?1, ?2, ?3, ?4, ?5)",
                 params![school, name, level, course, id],
             ).unwrap();
         }
-        conn.execute("UPDATE tickets SET done = 1 WHERE id = ?1", [id]).unwrap();
+
+        // 3. อัปเดตสถานะ Ticket เป็นเสร็จสิ้น
+        tx.execute("UPDATE tickets SET done = 1 WHERE id = ?1", [id]).unwrap();
+        
+        tx.commit().unwrap();
     })
     .await
     .unwrap();
